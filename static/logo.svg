@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 80" role="img" aria-labelledby="title desc">
+  <title id="title">Demarick Webb-Rivera Monogram</title>
+  <desc id="desc">Stylized shield mark with initials DWR used for Safe URL Check interface.</desc>
+  <defs>
+    <linearGradient id="shieldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d9ff"/>
+      <stop offset="50%" stop-color="#6dd5ed"/>
+      <stop offset="100%" stop-color="#0089c7"/>
+    </linearGradient>
+    <linearGradient id="textFade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f0faff"/>
+      <stop offset="100%" stop-color="#7ad7ff"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(12,10)">
+    <path d="M48 0 L88 12 V34 C88 52 70 66 48 72 C26 66 8 52 8 34 V12 Z" fill="url(#shieldGlow)" opacity="0.8" filter="url(#softGlow)"/>
+    <path d="M48 6 L82 18 V32 C82 46 67 58 48 63 C29 58 14 46 14 32 V18 Z" fill="none" stroke="#0b2b4a" stroke-width="3" opacity="0.65"/>
+    <path d="M32 22 H50 C55 22 59 26 59 31 C59 36 55 40 50 40 H38 V50 H32 Z" fill="#031226"/>
+    <path d="M54 22 H70 C75 22 79 26 79 31 C79 36 75 40 70 40 H62 L70 50 H62 L54 40 Z" fill="#031226"/>
+  </g>
+  <g transform="translate(120,50)">
+    <text x="0" y="0" font-family="'Segoe UI', 'Roboto', sans-serif" font-size="32" font-weight="600" fill="url(#textFade)" letter-spacing="4">SAFE URL CHECK</text>
+    <text x="0" y="24" font-family="'Segoe UI', 'Roboto', sans-serif" font-size="14" fill="#7ad7ff" letter-spacing="6">DEM</text>
+    <text x="58" y="24" font-family="'Segoe UI', 'Roboto', sans-serif" font-size="14" fill="#7ad7ff" letter-spacing="6">WEBB</text>
+    <text x="132" y="24" font-family="'Segoe UI', 'Roboto', sans-serif" font-size="14" fill="#7ad7ff" letter-spacing="6">RIVERA</text>
+  </g>
+</svg>

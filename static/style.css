@@ -13,6 +13,38 @@ margin:0;
 /* Remove default padding */
 padding:0
 }
+/* Animated scanline overlay for additional tech ambiance */
+body::before{
+/* Ensure pseudo element renders */
+content:"";
+/* Fixed positioning covers entire viewport */
+position:fixed;
+/* Align to top left */
+top:0;
+left:0;
+/* Stretch across full viewport */
+width:100%;
+height:100%;
+/* Create diagonal grid shimmer */
+background-image:linear-gradient(120deg, rgba(0,217,255,0.06) 0%, rgba(0,217,255,0.02) 35%, transparent 40%), repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,217,255,0.04) 3px, rgba(0,217,255,0.04) 4px);
+/* Subtle translucency */
+opacity:0.35;
+/* Allow user interaction with underlying content */
+pointer-events:none;
+/* Blend overlay for luminous effect */
+mix-blend-mode:screen;
+/* Slow pan animation */
+animation:scan 12s linear infinite
+}
+/* Keyframes for slow diagonal scan animation */
+@keyframes scan{
+0%{
+background-position:0 0, 0 0
+}
+100%{
+background-position:200px -400px, 0 16px
+}
+}
 /* Container for centering and styling main content */
 .container{
 /* Maximum width to prevent excessive stretching */
@@ -30,7 +62,35 @@ border:1px solid rgba(100,200,255,0.3);
 /* Enhanced shadow with glow effect */
 box-shadow:0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(100,200,255,0.1);
 /* Smooth backdrop filter for glass morphism */
-backdrop-filter:blur(10px)
+backdrop-filter:blur(10px);
+/* Position relative to anchor neon accents */
+position:relative;
+/* Hide overflow for neon elements */
+overflow:hidden
+}
+/* Subtle particle sparkles behind content */
+.container::before{
+/* Generate pseudo element */
+content:"";
+/* Absolute positioning */
+position:absolute;
+/* Position in top right quadrant */
+top:-120px;
+right:-180px;
+/* Create circular gradient */
+width:280px;
+height:280px;
+/* Luminous gradient circle */
+background:radial-gradient(circle at center, rgba(0,217,255,0.25) 0%, rgba(0,217,255,0) 70%);
+/* Allow overlay to sit behind content */
+z-index:0
+}
+/* Ensure main content sits above background accents */
+.container > *{
+/* Establish default stacking order */
+position:relative;
+/* Place above pseudo elements */
+z-index:1
 }
 /* Styling for h1 heading */
 h1{
@@ -50,6 +110,85 @@ text-align:center;
 margin-bottom:30px;
 /* Letter spacing for tech aesthetic */
 letter-spacing:1px
+}
+/* Topbar layout containing logo and metadata */
+.topbar{
+/* Flexbox for horizontal alignment */
+display:flex;
+/* Space elements evenly */
+justify-content:space-between;
+/* Align vertically */
+align-items:center;
+/* Allow wrapping on narrow viewports */
+flex-wrap:wrap;
+/* Gap between elements */
+gap:20px;
+/* Remove default margin from surrounding elements */
+margin-bottom:24px
+}
+/* Brand container for logo and text */
+.brand{
+/* Flex alignment */
+display:flex;
+/* Align center vertically */
+align-items:center;
+/* Gap between logo and text */
+gap:16px
+}
+/* Logo image styling */
+.brand-logo{
+/* Fixed height for consistency */
+height:64px;
+/* Maintain aspect ratio */
+width:auto;
+/* Soft glow around logo */
+filter:drop-shadow(0 0 12px rgba(0,217,255,0.35))
+}
+/* Brand text wrapper */
+.brand-text{
+/* Ensure subtitle stays close to heading */
+display:flex;
+/* Stack vertically */
+flex-direction:column;
+/* Small gap between lines */
+gap:4px
+}
+/* Heading inside brand text aligns to left */
+.brand-text h1{
+/* Left alignment for logo pairing */
+text-align:left;
+/* Remove bottom margin */
+margin-bottom:0
+}
+/* Subtitle alignment tweak inside brand */
+.brand-text .subtitle{
+/* Left alignment */
+text-align:left;
+/* Muted spacing */
+margin:0
+}
+/* Badge indicating active telemetry */
+.tech-badge{
+/* Uppercase tech styling */
+text-transform:uppercase;
+/* Letter spacing for futuristic feel */
+letter-spacing:0.15em;
+/* Small font size */
+font-size:0.7em;
+/* Padding to create pill shape */
+padding:10px 18px;
+/* Neon border */
+border:1px solid rgba(0,217,255,0.4);
+/* Gradient background */
+background:linear-gradient(135deg, rgba(0,217,255,0.2), rgba(0,80,160,0.2));
+/* Rounded pill edges */
+border-radius:999px;
+/* Subtle glow */
+box-shadow:0 0 20px rgba(0,217,255,0.25);
+/* Color emphasis */
+color:#7ad7ff;
+/* Prevent shrinking in flex layout */
+flex:0 0 auto
 }
 /* Header banner with shield icon */
 .header-banner{
@@ -92,6 +231,60 @@ color:#6dd5ed;
 font-size:1.1em;
 /* Remove default margins */
 margin:10px 0 0 0
+}
+/* Divider with neon glow between header and body */
+.holo-divider{
+/* Full width line */
+width:100%;
+/* Height of the line */
+height:2px;
+/* Gradient glow */
+background:linear-gradient(90deg, rgba(0,217,255,0) 0%, rgba(0,217,255,0.8) 50%, rgba(0,217,255,0) 100%);
+/* Shadow for depth */
+box-shadow:0 0 12px rgba(0,217,255,0.45);
+/* Margin to separate sections */
+margin:8px 0 28px 0
+}
+/* Neon accent bar at top of container */
+.neon-bar{
+/* Height of accent */
+height:4px;
+/* Rounded edges */
+border-radius:999px;
+/* Gradient for glowing effect */
+background:linear-gradient(90deg, #0089c7 0%, #00d9ff 35%, #6dd5ed 70%, #0089c7 100%);
+/* Outer glow */
+box-shadow:0 0 18px rgba(0,217,255,0.45);
+/* Margin below bar */
+margin-bottom:24px
+}
+/* Animated tagline below shield icon */
+.tech-tagline{
+/* Uppercase letter spacing */
+text-transform:uppercase;
+/* Letter spacing for digital feel */
+letter-spacing:0.2em;
+/* Color accent */
+color:rgba(122,215,255,0.8);
+/* Margin for breathing room */
+margin-top:18px;
+/* Smaller font size */
+font-size:0.75em;
+/* Pulsing glow */
+text-shadow:0 0 15px rgba(0,217,255,0.35);
+/* Animation to shimmer text */
+animation:tagpulse 3.5s ease-in-out infinite;
+/* Display block for consistent alignment */
+display:block
+}
+/* Tagline shimmer animation */
+@keyframes tagpulse{
+0%, 100%{
+opacity:0.55
+}
+50%{
+opacity:1
+}
 }
 /* Form layout with flexbox */
 form{
@@ -303,8 +496,182 @@ margin:20px 0;
 /* Gradient text color */
 background:linear-gradient(135deg, #00d9ff 0%, #6dd5ed 100%);
 /* Clip background to text */
--webkit-background-clip:text;
 background-clip:text;
 /* Transparent text to show gradient */
--webkit-text-fill-color:transparent
+}
+/* Result title spacing within banner */
+.result-title{
+/* Remove default margin */
+margin:12px 0 0 0;
+/* Color matching main heading */
+color:#00d9ff;
+/* Text shadow for glow */
+text-shadow:0 0 16px rgba(0,217,255,0.4);
+/* Uppercase style */
+text-transform:uppercase;
+/* Letter spacing for tech aesthetic */
+letter-spacing:0.18em
+}
+/* Breakdown table styling */
+.breakdown-table{
+/* Full width table */
+width:100%;
+/* Collapse borders for clean look */
+border-collapse:collapse;
+/* Margin above the table */
+margin-top:20px;
+/* Dark translucent background */
+background:rgba(12,20,40,0.7);
+/* Rounded corners */
+border-radius:10px;
+/* Hide overflow for rounded corners */
+overflow:hidden;
+/* Box shadow for depth */
+box-shadow:0 6px 18px rgba(0,217,255,0.15)
+}
+/* Table header cells */
+.breakdown-table th{
+/* Align text to left */
+text-align:left;
+/* Uppercase heading */
+text-transform:uppercase;
+/* Letter spacing */
+letter-spacing:0.05em;
+/* Padding inside cell */
+padding:12px 16px;
+/* Background gradient */
+background:linear-gradient(135deg, rgba(0,217,255,0.3), rgba(0,217,255,0.1));
+/* Cyan text color */
+color:#9de8ff;
+/* Font size */
+font-size:0.85em
+}
+/* Table body cells */
+.breakdown-table td{
+/* Padding for readability */
+padding:12px 16px;
+/* Border bottom separator */
+border-bottom:1px solid rgba(0,217,255,0.1);
+/* Font size */
+font-size:0.95em
+}
+/* Last row bottom border removal */
+.breakdown-table tbody tr:last-child td{
+/* Remove border */
+border-bottom:none
+}
+/* Intel list styling */
+.intel-list,
+.intel-errors{
+/* Remove inherited padding */
+padding-left:0;
+/* Remove bullets */
+list-style:none
+}
+/* Intel list items */
+.intel-list li,
+.intel-errors li{
+/* Background panel */
+background:rgba(10,18,35,0.6);
+/* Border */
+border:1px solid rgba(0,217,255,0.15);
+/* Padding */
+padding:14px 16px;
+/* Margin spacing */
+margin-bottom:12px;
+/* Rounded corners */
+border-radius:10px;
+/* Box shadow */
+box-shadow:0 4px 15px rgba(0,217,255,0.1);
+/* Display flex for pill alignment */
+display:flex;
+/* Align items vertically */
+align-items:center;
+/* Gap between text and pill */
+gap:12px
+}
+/* Intel severity pill */
+.intel-pill{
+/* Padding for pill shape */
+padding:4px 10px;
+/* Rounded edges */
+border-radius:999px;
+/* Uppercase text */
+text-transform:uppercase;
+/* Letter spacing */
+letter-spacing:0.08em;
+/* Font weight */
+font-weight:600;
+/* Font size smaller */
+font-size:0.7em
+}
+/* Severity color variations */
+.severity-low{
+/* Soft green background */
+background:rgba(0,200,83,0.2);
+/* Green text */
+color:#5ad99c
+}
+.severity-medium{
+/* Amber background */
+background:rgba(255,193,7,0.2);
+/* Amber text */
+color:#ffdd76
+}
+.severity-high{
+/* Red background */
+background:rgba(255,82,82,0.25);
+/* Red text */
+color:#ff9a9a
+}
+.severity-unknown{
+/* Blue background */
+background:rgba(0,173,239,0.2);
+/* Blue text */
+color:#8cd8ff
+}
+/* Footer styling */
+.footer{
+/* Center align text */
+text-align:center;
+/* Upper margin separates from content */
+margin-top:48px;
+/* Muted color */
+color:rgba(232,241,255,0.5);
+/* Letter spacing */
+letter-spacing:0.18em;
+/* Uppercase for tech tone */
+text-transform:uppercase;
+/* Smaller font */
+font-size:0.7em;
+/* Border line */
+border-top:1px solid rgba(0,217,255,0.15);
+/* Padding above text */
+padding-top:18px
+}
+
+/* Responsive adjustments for mobile layouts */
+@media (max-width:600px){
+/* Stack form fields vertically */
+form{
+flex-direction:column
+}
+/* Make badge full width */
+.tech-badge{
+width:100%;
+text-align:center
+}
+/* Reduce logo size */
+.brand-logo{
+height:52px
+}
+/* Center brand text on narrow viewports */
+.brand-text h1,
+.brand-text .subtitle{
+text-align:center
+}
+/* Align badge centrally */
+.topbar{
+justify-content:center
+}
 }

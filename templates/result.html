@@ -17,12 +17,33 @@
 <body>
 <!-- Container div for centering and styling content -->
 <div class="container">
-<!-- Header banner with result icon -->
+<!-- Neon accent line at the top of the result panel -->
+<div class="neon-bar"></div>
+<!-- Header region combining logo and descriptor badge -->
+<header class="topbar">
+<!-- Brand wrapper for the logo asset and text -->
+<div class="brand">
+<!-- Inline image referencing the Demarick Webb-Rivera logo -->
+<img src="/static/logo.svg" alt="Demarick Webb-Rivera logo" class="brand-logo">
+<!-- Wrapper providing alignment for heading and subtitle -->
+<div class="brand-text">
+<!-- Main heading for the application -->
+<h1>Safe URL Check</h1>
+<!-- Subtitle with description -->
+<p class="subtitle">Advanced URL Security Analysis</p>
+</div>
+</div>
+<!-- Badge highlighting the analysis status -->
+<div class="tech-badge">Telemetry Report Generated</div>
+</header>
+<!-- Glowing divider separating header from result body -->
+<div class="holo-divider"></div>
+<!-- Header banner with adaptive icon for analysis outcome -->
 <div class="header-banner">
 <!-- Alert emoji as analysis icon -->
 <div class="shield-icon">{% if result.score < 30 %}✅{% elif result.score < 70 %}⚠️{% else %}🚨{% endif %}</div>
 <!-- Main heading for results page -->
-<h1>Analysis Complete</h1>
+<h2 class="result-title">Analysis Complete</h2>
 </div>
 <!-- Display analyzed URL using Jinja2 template variable -->
 <p><strong>🔗 URL:</strong> {{ url }}</p>
@@ -31,6 +52,33 @@
 <p style="text-align:center; margin-top:-10px; color:#6dd5ed; font-size:1.2em;">/ 100</p>
 <!-- Display suggested action based on analysis -->
 <p style="text-align:center; font-size:1.3em; margin:20px 0;"><strong>📋 Suggested Action:</strong> {{ result.suggested_action }}</p>
+<!-- Conditional block to display score breakdown details -->
+{% if result.breakdown %}
+<!-- Subheading for score breakdown -->
+<h3>📊 Score Breakdown</h3>
+<!-- Table element for score breakdown entries -->
+<table class="breakdown-table">
+<!-- Table header row defining columns -->
+<thead>
+<tr>
+<th>Category</th>
+<th>Signal</th>
+<th>Weight</th>
+</tr>
+</thead>
+<!-- Table body containing each breakdown row -->
+<tbody>
+<!-- Iterate over each breakdown entry -->
+{% for item in result.breakdown %}
+<tr>
+<td>{{ item.category }}</td>
+<td>{{ item.message }}</td>
+<td>{% if item.points > 0 %}+{{ item.points }}{% else %}0{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
 <!-- Subheading for reasons list -->
 <h3>🔍 Detection Details</h3>
 <!-- Unordered list to display all analysis reasons -->
@@ -42,8 +90,36 @@
 <!-- End of for loop -->
 {% endfor %}
 </ul>
+<!-- Conditional block to display external intelligence hits -->
+{% if result.intel_hits %}
+<!-- Subheading for intelligence hits -->
+<h3>🛰 External Intelligence</h3>
+<!-- Unordered list for intelligence hits -->
+<ul class="intel-list">
+<!-- Iterate over each intelligence hit -->
+{% for hit in result.intel_hits %}
+<li>
+<strong>{{ hit.source }}</strong>: {{ hit.description }}
+<span class="intel-pill severity-{{ hit.severity|default('unknown') }}">{{ hit.severity|default('unknown')|capitalize }}</span>
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+<!-- Conditional block to show intelligence errors -->
+{% if result.intel_errors %}
+<!-- Subheading for intelligence errors -->
+<h3>ℹ️ Intelligence Notes</h3>
+<!-- Unordered list for error messages -->
+<ul class="intel-errors">
+{% for item in result.intel_errors %}
+<li>{{ item.source }}: {{ item.message }}</li>
+{% endfor %}
+</ul>
+{% endif %}
 <!-- Link to return to homepage and check another URL -->
 <p style="text-align:center; margin-top:40px;"><a href="/">← Check Another URL</a></p>
+<!-- Footer containing copyright notice -->
+<footer class="footer">2025 Demarick Webb-Rivera</footer>
 </div>
 </body>
 </html>

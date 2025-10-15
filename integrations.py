@@ -4,6 +4,8 @@ import dns.resolver
 import whois
 # Import typing hints for function signatures
 from typing import Tuple, List
+# Import lru_cache decorator to cache expensive lookups
+from functools import lru_cache
 # Import os module to read environment variables
 import os
 # Import requests library for HTTP API calls
@@ -11,11 +13,12 @@ import requests
 
 
 # Function to retrieve MX (Mail Exchange) records for a domain
+@lru_cache(maxsize=256)
 def get_mx_records(domain: str) -> List[str]:
     # Try to query DNS for MX records
     try:
         # Resolve MX records for the given domain
-        answers = dns.resolver.resolve(domain, 'MX')
+        answers = dns.resolver.resolve(domain, 'MX', lifetime=5)
         # Extract and strip trailing dots from MX hostnames, return as list
         return [str(r.exchange).rstrip('.') for r in answers]
     # If DNS lookup fails, catch the exception
@@ -31,11 +34,12 @@ def has_mx(domain: str) -> bool:
 
 
 # Function to check if a domain has SPF (Sender Policy Framework) record
+@lru_cache(maxsize=256)
 def has_spf(domain: str) -> bool:
     # Try to query DNS for TXT records
     try:
         # Resolve TXT records for the given domain
-        answers = dns.resolver.resolve(domain, 'TXT')
+        answers = dns.resolver.resolve(domain, 'TXT', lifetime=5)
         # Loop through each TXT record
         for r in answers:
             # Decode bytes to string if needed, join all parts of the TXT record
@@ -53,6 +57,7 @@ def has_spf(domain: str) -> bool:
 
 
 # Function to retrieve WHOIS information for a domain
+@lru_cache(maxsize=256)
 def get_whois_info(domain: str) -> dict:
     # Try to perform WHOIS lookup
     try:

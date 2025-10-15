@@ -1,9 +1,13 @@
 # Import regular expression module for pattern matching
 import re
+# Import math module for non-linear score aggregation
+import math
 # Import URL parsing utility from urllib
 from urllib.parse import urlparse
 # Import integration functions for DNS, WHOIS, and Safe Browsing checks
 from integrations import has_mx, has_spf, get_whois_info, safe_browsing_check
+# Import threat intelligence aggregation helper
+from threat_intel import collect_threat_intel
 
 
 # Set of suspicious top-level domains commonly used for phishing
@@ -21,147 +25,191 @@ def looks_like_ip(hostname: str) -> bool:
 # Main function to analyze a URL for phishing indicators
 def analyze_url(url: str) -> dict:
     # Docstring explaining function purpose and return value
-    """Return a small heuristics-based analysis of the URL.
+    """Return a heuristics and intelligence based analysis of the URL.
 
-    Result dict contains: score (0-100), reasons (list), and suggested_action.
+    Result dict contains the score (0-100), reasons, suggested action, a
+    detailed breakdown, and raw threat intelligence hits/errors.
     """
-    # Initialize empty list to store reasons for score
+    # Initialize list that will hold human readable reasons
     reasons = []
-    # Initialize score at zero (higher score = more suspicious)
-    score = 0
+    # Initialize list capturing granular scoring contributions
+    breakdown = []
+    # Initialize list capturing numeric score inputs for aggregation
+    score_inputs = []
 
-    # Try to parse the URL
+    # Define helper function to record scoring signals consistently
+    def record(weight: int, message: str, category: str) -> None:
+        # Add weight to list when it contributes to score
+        if weight > 0:
+            score_inputs.append(weight)
+        # Format human readable reason including category label
+        label = f'[{category}] {message}' if category else message
+        # Append reason to reason list
+        reasons.append(label)
+        # Append entry to breakdown list with metadata
+        breakdown.append({'points': weight, 'category': category, 'message': message})
+
+    # Try to parse the provided URL safely
     try:
-        # Parse URL, adding http:// if no scheme present
+        # Parse URL, defaulting to http scheme when missing
         parsed = urlparse(url if '://' in url else 'http://' + url)
-    # If URL parsing fails, catch the exception
+    # Handle parsing errors gracefully
     except Exception:
-        # Return maximum score and error message for invalid URL
-        return {'score': 100, 'reasons': ['Invalid URL format'], 'suggested_action': 'Do not visit'}
+        # Return high risk result for invalid URLs
+        return {
+            'score': 100,
+            'reasons': ['Invalid URL format'],
+            'suggested_action': 'Do not visit — malformed URL',
+            'breakdown': [],
+            'intel_hits': [],
+            'intel_errors': [],
+        }
 
-    # Extract hostname from parsed URL (empty string if None)
+    # Extract hostname for domain level heuristics
     host = parsed.hostname or ''
-    # Extract path from parsed URL (empty string if None)
+    # Extract path segment for keyword scanning
     path = parsed.path or ''
 
-    # Check if hostname is an IP address (suspicious)
+    # Evaluate whether hostname is presented as raw IP address
     if looks_like_ip(host):
-        # Add reason to list
-        reasons.append('Hostname is an IP address')
-        # Add 40 points to score (high risk indicator)
-        score += 40
+        # Record network based signal with high weight
+        record(45, 'Hostname is a direct IP address', 'network')
 
-    # Check if domain uses a suspicious TLD
+    # Inspect domain suffix against suspicious TLD catalogue
     for tld in SUSPICIOUS_TLDS:
-        # Check if hostname ends with this suspicious TLD
+        # Check whether host ends with flagged top-level domain
         if host.endswith(tld):
-            # Add reason with specific TLD to list
-            reasons.append(f'Suspicious top-level domain ({tld})')
-            # Add 25 points to score
-            score += 25
-            # Stop checking after first match
+            # Record top-level domain heuristic
+            record(28, f'Suspicious top-level domain ({tld})', 'domain')
+            # Exit loop once a match is found
             break
 
-    # Check if URL is unusually long (possible obfuscation)
+    # Evaluate overall URL length for obfuscation patterns
     if len(url) > 100:
-        # Add reason to list
-        reasons.append('URL is unusually long')
-        # Add 10 points to score
-        score += 10
+        # Record presentation heuristic for excessively long URLs
+        record(12, 'URL length exceeds 100 characters', 'presentation')
 
-    # Check for suspicious words in hostname and path
-    # Convert hostname and path to lowercase for case-insensitive matching
+    # Normalize host and path for keyword scanning
     low = (host + ' ' + path).lower()
-    # Find all suspicious words present in the URL
-    found = [w for w in SUSPICIOUS_WORDS if w in low]
-    # If any suspicious words found
+    # Determine suspicious vocabulary present in URL components
+    found = [word for word in SUSPICIOUS_WORDS if word in low]
+    # If suspicious terms discovered then record heuristic
     if found:
-        # Add reason with list of found words
-        reasons.append('Contains suspicious words: ' + ', '.join(found))
-        # Add 20 points to score
-        score += 20
+        # Record string based heuristic with associated weight
+        record(22, 'Contains high risk keywords: ' + ', '.join(sorted(found)), 'keywords')
 
-    # Check for multiple subdomains (obfuscation technique)
+    # Count subdomains as indicator of obfuscation
     if host.count('.') >= 3:
-        # Add reason to list
-        reasons.append('Many subdomains (possible obfuscation)')
-        # Add 5 points to score
-        score += 5
+        # Record subdomain heavy structure heuristic
+        record(7, 'Hostname contains multiple nested subdomains', 'domain structure')
 
-    # Perform email domain and DNS checks
-    # Use hostname as domain for checks
+    # Capture domain for DNS and WHOIS lookups
     domain = host
-    # Try to perform DNS and WHOIS checks
-    try:
-        # Only check if domain exists
-        if domain:
-            # Check if domain has MX records (email capability)
+    # Execute DNS and WHOIS checks when domain is available
+    if domain:
+        # Use try-except to insulate scoring from lookup errors
+        try:
+            # Determine whether MX records exist for domain
             if not has_mx(domain):
-                # Add reason if no MX records found
-                reasons.append('No MX records found for domain (email delivery unlikely)')
-                # Add 10 points to score
-                score += 10
-            # Check if domain has SPF record (email authentication)
+                # Record absence of MX records as medium risk indicator
+                record(12, 'No MX records detected for domain', 'dns')
+            # Determine whether SPF records are published
             if not has_spf(domain):
-                # Add reason if no SPF record found
-                reasons.append('No SPF record found for domain')
-                # Add 5 points to score
-                score += 5
-            # Get WHOIS information for domain
+                # Record absence of SPF record as low-medium indicator
+                record(6, 'No SPF record detected for domain', 'dns')
+            # Retrieve WHOIS registration metadata
             who = get_whois_info(domain)
-            # Check if WHOIS info exists and has creation date
-            if who and who.get('creation_date'):
-                # Add positive indicator if WHOIS info found
-                reasons.append('WHOIS: domain registration info found')
-            # If no WHOIS info or creation date
+            # If WHOIS info lacks creation date treat as suspicious
+            if not who or not who.get('creation_date'):
+                # Record missing WHOIS footprint heuristic
+                record(8, 'WHOIS data missing or privacy protected', 'whois')
             else:
-                # Add reason for missing WHOIS info
-                reasons.append('WHOIS: no registration info / private')
-                # Add 5 points to score
-                score += 5
-    # If DNS/WHOIS checks fail, catch exception
-    except Exception:
-        # Non-fatal error - don't break the entire analysis
-        pass
+                # Record presence of WHOIS info as neutral informational note
+                record(0, 'WHOIS registration data resolved successfully', 'whois')
+        # Swallow lookup errors while emitting informational note
+        except Exception as dns_error:
+            # Record lookup failure with zero weight for transparency
+            record(0, f'DNS/WHOIS lookup failed: {dns_error}', 'infrastructure')
 
-    # Perform Google Safe Browsing API check
-    # Call Safe Browsing API with the URL
+    # Issue Google Safe Browsing lookup for reputation signal
     sb = safe_browsing_check(url)
-    # Check if API call was successful
+    # When Safe Browsing query succeeds inspect matches
     if sb.get('ok'):
-        # Get list of threat matches from response
+        # Extract matches list from API response
         matches = sb.get('matches', [])
-        # If any threats detected
+        # When threats are present record high severity signal
         if matches:
-            # Extract unique threat types from matches
-            threat_types = ', '.join(set(m.get('threatType', 'UNKNOWN') for m in matches))
-            # Add warning with threat types to reasons
-            reasons.append(f'⚠️ Google Safe Browsing: flagged as {threat_types}')
-            # Add 50 points to score (major threat indicator)
-            score += 50
-    # If API call failed and error is not about missing API key
+            # Create comma separated list of threat types
+            threat_types = ', '.join(sorted(set(match.get('threatType', 'UNKNOWN') for match in matches)))
+            # Record Safe Browsing flag with elevated weight
+            record(70, f'Google Safe Browsing flagged threat types: {threat_types}', 'external intel')
+    # When Safe Browsing fails and error is not missing API key report issue
     elif sb.get('error') and 'API key' not in sb.get('error', ''):
-        # Add Safe Browsing error to reasons (but not if just missing key)
-        reasons.append(f'Safe Browsing check failed: {sb.get("error")}')
+        # Record failure message with zero scoring weight
+        record(0, f'Safe Browsing lookup failed: {sb.get("error")}', 'external intel')
 
-    # Cap the score at maximum of 100
-    score = min(100, score)
+    # Aggregate external intelligence feeds for additional signals
+    intel_result = collect_threat_intel(url)
+    # Extract list of hits from aggregated intelligence
+    intel_hits = intel_result.get('hits', [])
+    # Extract list of errors from aggregated intelligence
+    intel_errors = intel_result.get('errors', [])
+    # Iterate through intelligence hits to incorporate into scoring
+    for hit in intel_hits:
+        # Normalize severity field to lower case for weight mapping
+        severity = (hit.get('severity') or 'medium').lower()
+        # Map severity strings to integer score weights
+        severity_weight = {'low': 20, 'medium': 40, 'high': 65}.get(severity, 40)
+        # Compose descriptive message summarizing intelligence finding
+        message = f"{hit.get('source', 'Intel')} match — {hit.get('description', 'flagged threat')} (severity: {severity})"
+        # Record intelligence signal with mapped weight
+        record(severity_weight, message, 'external intel')
 
-    # Determine suggested action based on score
-    if score >= 60:
-        # High score = likely malicious
-        suggested = 'Do not visit — likely malicious'
-    elif score >= 30:
-        # Medium score = possibly suspicious
-        suggested = 'Caution — possibly suspicious'
+    # Record any intelligence source errors as informational notes
+    for intel_error in intel_errors:
+        # Compose message describing the error for transparency
+        error_message = f"{intel_error.get('source', 'Intel source')} unavailable: {intel_error.get('message', 'Unknown error')}"
+        # Record informational note with zero scoring weight
+        record(0, error_message, 'external intel')
+
+    # Define helper to compute non-linear aggregate risk score
+    def aggregate_score(inputs):
+        # Return early when there are no scoring inputs
+        if not inputs:
+            return 0
+        # Calculate raw sum of score contributions
+        raw = sum(inputs)
+        # Convert raw score into bounded 0-100 value with diminishing returns
+        return min(100, int(round(100 * (1 - math.exp(-raw / 60.0)))))
+
+    # Compute final score using aggregated contributions
+    score = aggregate_score(score_inputs)
+
+    # Determine suggested action thresholds based on final score
+    if score >= 70:
+        # High risk bucket indicates malicious likelihood
+        suggested = 'Do not visit — very high risk'
+    elif score >= 45:
+        # Moderate risk bucket indicates strong suspicion
+        suggested = 'Use extreme caution — suspicious indicators present'
+    elif score >= 20:
+        # Low risk bucket still warrants caution
+        suggested = 'Proceed carefully — mixed signals found'
     else:
-        # Low score = likely safe (but still be cautious)
-        suggested = 'Likely safe, but remain cautious'
+        # Minimal risk bucket indicates likely safe outcome
+        suggested = 'Likely safe, but remain vigilant'
 
-    # If no reasons were added (clean URL)
+    # Ensure there is at least one reason to display to the user
     if not reasons:
-        # Add default message
+        # Provide default reason when no signals are present
         reasons = ['No obvious heuristics detected']
 
-    # Return dictionary with score, reasons, and suggested action
-    return {'score': score, 'reasons': reasons, 'suggested_action': suggested}
+    # Return comprehensive analysis dictionary
+    return {
+        'score': score,
+        'reasons': reasons,
+        'suggested_action': suggested,
+        'breakdown': breakdown,
+        'intel_hits': intel_hits,
+        'intel_errors': intel_errors,
+    }
