@@ -1,0 +1,310 @@
+/* Base body styling for entire page */
+body{
+/* Font family using Segoe UI as primary, falling back to system fonts */
+font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+/* Dark gradient background for tech aesthetic */
+background:linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1629 100%);
+/* Light text color for dark background */
+color:#e8f1ff;
+/* Minimum height to fill viewport */
+min-height:100vh;
+/* Remove default margin */
+margin:0;
+/* Remove default padding */
+padding:0
+}
+/* Container for centering and styling main content */
+.container{
+/* Maximum width to prevent excessive stretching */
+max-width:900px;
+/* Center container horizontally with top margin */
+margin:40px auto;
+/* Internal padding for content spacing */
+padding:40px;
+/* Dark semi-transparent background with backdrop blur */
+background:rgba(20,25,45,0.85);
+/* Rounded corners for modern look */
+border-radius:16px;
+/* Glowing border effect for tech aesthetic */
+border:1px solid rgba(100,200,255,0.3);
+/* Enhanced shadow with glow effect */
+box-shadow:0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(100,200,255,0.1);
+/* Smooth backdrop filter for glass morphism */
+backdrop-filter:blur(10px)
+}
+/* Styling for h1 heading */
+h1{
+/* Remove top margin for cleaner layout */
+margin-top:0;
+/* Bright cyan color for tech look */
+color:#00d9ff;
+/* Larger font size for prominence */
+font-size:2.5em;
+/* Bold font weight */
+font-weight:700;
+/* Text shadow for glow effect */
+text-shadow:0 0 20px rgba(0,217,255,0.5);
+/* Center align heading */
+text-align:center;
+/* Add margin bottom */
+margin-bottom:30px;
+/* Letter spacing for tech aesthetic */
+letter-spacing:1px
+}
+/* Header banner with shield icon */
+.header-banner{
+/* Center content */
+text-align:center;
+/* Space below banner */
+margin-bottom:30px
+}
+/* Shield icon styling */
+.shield-icon{
+/* Large icon size */
+font-size:80px;
+/* Cyan color */
+color:#00d9ff;
+/* Glow effect */
+text-shadow:0 0 30px rgba(0,217,255,0.6);
+/* Remove margin */
+margin:0;
+/* Animation for pulsing effect */
+animation:pulse 2s ease-in-out infinite
+}
+/* Pulse animation keyframes */
+@keyframes pulse{
+/* Start state */
+0%, 100%{
+/* Normal glow */
+text-shadow:0 0 30px rgba(0,217,255,0.6)
+}
+/* Mid state */
+50%{
+/* Enhanced glow */
+text-shadow:0 0 50px rgba(0,217,255,0.9)
+}
+}
+/* Subtitle text styling */
+.subtitle{
+/* Muted cyan color */
+color:#6dd5ed;
+/* Larger font size */
+font-size:1.1em;
+/* Remove default margins */
+margin:10px 0 0 0
+}
+/* Form layout with flexbox */
+form{
+/* Flexbox for horizontal layout */
+display:flex;
+/* Space between form elements */
+gap:12px;
+/* Add margin top */
+margin-top:30px
+}
+/* Text input field styling */
+input[name="url"]{
+/* Flex grow to fill available space */
+flex:1;
+/* Larger internal padding for input field */
+padding:14px 18px;
+/* Cyan border with glow */
+border:2px solid rgba(0,217,255,0.4);
+/* Rounded corners for input */
+border-radius:8px;
+/* Dark background */
+background:rgba(10,15,35,0.6);
+/* Light text color */
+color:#e8f1ff;
+/* Larger font size */
+font-size:16px;
+/* Smooth transition for focus effect */
+transition:all 0.3s ease;
+/* Remove outline */
+outline:none
+}
+/* Input focus state */
+input[name="url"]:focus{
+/* Brighter border on focus */
+border-color:#00d9ff;
+/* Enhanced glow on focus */
+box-shadow:0 0 20px rgba(0,217,255,0.3);
+/* Slightly lighter background */
+background:rgba(10,15,35,0.8)
+}
+/* Input placeholder styling */
+input[name="url"]::placeholder{
+/* Muted color for placeholder */
+color:rgba(232,241,255,0.5)
+}
+/* Button styling */
+button{
+/* Internal padding for button */
+padding:14px 32px;
+/* Cyan gradient background */
+background:linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+/* White text color */
+color:#fff;
+/* Remove default border */
+border:none;
+/* Rounded corners for button */
+border-radius:8px;
+/* Pointer cursor on hover */
+cursor:pointer;
+/* Bold font weight */
+font-weight:600;
+/* Larger font size */
+font-size:16px;
+/* Smooth transition */
+transition:all 0.3s ease;
+/* Glow effect */
+box-shadow:0 4px 15px rgba(0,217,255,0.4);
+/* Letter spacing */
+letter-spacing:0.5px
+}
+/* Button hover state */
+button:hover{
+/* Enhanced gradient on hover */
+background:linear-gradient(135deg, #00f0ff 0%, #00bbee 100%);
+/* Lift effect */
+transform:translateY(-2px);
+/* Enhanced glow on hover */
+box-shadow:0 6px 25px rgba(0,217,255,0.6)
+}
+/* Button active state */
+button:active{
+/* Slight press effect */
+transform:translateY(0)
+}
+/* Link styling */
+a{
+/* Cyan link color */
+color:#00d9ff;
+/* Remove underline by default */
+text-decoration:none;
+/* Smooth transition */
+transition:all 0.3s ease
+}
+/* Link hover state */
+a:hover{
+/* Brighter color on hover */
+color:#00f0ff;
+/* Add underline on hover */
+text-decoration:underline;
+/* Glow effect on hover */
+text-shadow:0 0 10px rgba(0,217,255,0.5)
+}
+/* Unordered list styling */
+ul{
+/* Increased line spacing for readability */
+line-height:2;
+/* Remove default padding */
+padding-left:20px
+}
+/* List item styling */
+li{
+/* Add margin between items */
+margin-bottom:10px;
+/* Add icon before each item */
+position:relative;
+/* Padding for icon */
+padding-left:10px
+}
+/* Subheading styling */
+h3{
+/* Cyan color */
+color:#00d9ff;
+/* Add margin top */
+margin-top:30px;
+/* Border bottom for emphasis */
+border-bottom:2px solid rgba(0,217,255,0.3);
+/* Padding bottom */
+padding-bottom:10px
+}
+/* Paragraph styling */
+p{
+/* Increased line height */
+line-height:1.6;
+/* Add margin */
+margin:15px 0
+}
+/* Strong text styling */
+strong{
+/* Brighter cyan color */
+color:#6dd5ed;
+/* Bold weight */
+font-weight:600
+}
+/* Note/disclaimer text styling */
+.note{
+/* Space above note text */
+margin-top:20px;
+/* Muted color */
+color:rgba(232,241,255,0.6);
+/* Center text */
+text-align:center;
+/* Smaller font */
+font-size:0.9em;
+/* Italic style */
+font-style:italic
+}
+/* Features grid layout */
+.features{
+/* Grid layout */
+display:grid;
+/* Three columns */
+grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+/* Gap between items */
+gap:20px;
+/* Margin top */
+margin-top:40px
+}
+/* Individual feature box */
+.feature-box{
+/* Dark background */
+background:rgba(10,15,35,0.5);
+/* Padding */
+padding:20px;
+/* Rounded corners */
+border-radius:12px;
+/* Border */
+border:1px solid rgba(100,200,255,0.2);
+/* Center text */
+text-align:center;
+/* Smooth transition */
+transition:all 0.3s ease
+}
+/* Feature box hover state */
+.feature-box:hover{
+/* Enhanced border on hover */
+border-color:rgba(0,217,255,0.5);
+/* Lift effect */
+transform:translateY(-5px);
+/* Glow effect */
+box-shadow:0 8px 20px rgba(0,217,255,0.2)
+}
+/* Feature icon styling */
+.feature-icon{
+/* Large icon */
+font-size:40px;
+/* Margin bottom */
+margin-bottom:10px
+}
+/* Result score display */
+.score-display{
+/* Large font */
+font-size:3em;
+/* Bold weight */
+font-weight:700;
+/* Center text */
+text-align:center;
+/* Margin */
+margin:20px 0;
+/* Gradient text color */
+background:linear-gradient(135deg, #00d9ff 0%, #6dd5ed 100%);
+/* Clip background to text */
+-webkit-background-clip:text;
+background-clip:text;
+/* Transparent text to show gradient */
+-webkit-text-fill-color:transparent
+}

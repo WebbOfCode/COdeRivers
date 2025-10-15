@@ -1,0 +1,49 @@
+<!-- HTML5 document type declaration -->
+<!doctype html>
+<!-- Root HTML element with English language attribute -->
+<html lang="en">
+<!-- Head section containing metadata and resources -->
+<head>
+<!-- Character encoding set to UTF-8 for proper text display -->
+<meta charset="utf-8">
+<!-- Viewport meta tag for responsive design on mobile devices -->
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Page title for result page shown in browser tab -->
+<title>Result — Safe URL Check</title>
+<!-- Link to external CSS stylesheet -->
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<!-- Body section containing visible page content -->
+<body>
+<!-- Container div for centering and styling content -->
+<div class="container">
+<!-- Header banner with result icon -->
+<div class="header-banner">
+<!-- Alert emoji as analysis icon -->
+<div class="shield-icon">{% if result.score < 30 %}✅{% elif result.score < 70 %}⚠️{% else %}🚨{% endif %}</div>
+<!-- Main heading for results page -->
+<h1>Analysis Complete</h1>
+</div>
+<!-- Display analyzed URL using Jinja2 template variable -->
+<p><strong>🔗 URL:</strong> {{ url }}</p>
+<!-- Display numerical score out of 100 with gradient styling -->
+<div class="score-display">{{ result.score }}</div>
+<p style="text-align:center; margin-top:-10px; color:#6dd5ed; font-size:1.2em;">/ 100</p>
+<!-- Display suggested action based on analysis -->
+<p style="text-align:center; font-size:1.3em; margin:20px 0;"><strong>📋 Suggested Action:</strong> {{ result.suggested_action }}</p>
+<!-- Subheading for reasons list -->
+<h3>🔍 Detection Details</h3>
+<!-- Unordered list to display all analysis reasons -->
+<ul>
+<!-- Jinja2 for loop to iterate through each reason -->
+{% for r in result.reasons %}
+<!-- List item displaying each individual reason -->
+<li>{{ r }}</li>
+<!-- End of for loop -->
+{% endfor %}
+</ul>
+<!-- Link to return to homepage and check another URL -->
+<p style="text-align:center; margin-top:40px;"><a href="/">← Check Another URL</a></p>
+</div>
+</body>
+</html>
