@@ -1,82 +1,67 @@
-<!-- HTML5 document type declaration -->
 <!doctype html>
-<!-- Root HTML element with English language attribute -->
 <html lang="en">
-<!-- Head section containing metadata and resources -->
 <head>
-<!-- Character encoding set to UTF-8 for proper text display -->
 <meta charset="utf-8">
-<!-- Viewport meta tag for responsive design on mobile devices -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- Page title shown in browser tab -->
 <title>Safe URL Check</title>
-<!-- Link to external CSS stylesheet -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/style.css">
 </head>
-<!-- Body section containing visible page content -->
 <body>
-<!-- Container div for centering and styling content -->
-<div class="container">
-<!-- Neon accent line at the top of the panel -->
-<div class="neon-bar"></div>
-<!-- Header region combining logo, title, and capability badge -->
-<header class="topbar">
-<!-- Brand wrapper for the logo asset and text -->
-<div class="brand">
-<!-- Inline image referencing the Demarick Webb-Rivera logo -->
-<img src="/static/logo.svg" alt="Demarick Webb-Rivera logo" class="brand-logo">
-<!-- Wrapper providing alignment for heading and subtitle -->
-<div class="brand-text">
-<!-- Main heading for the page -->
-<h1>Safe URL Check</h1>
-<!-- Subtitle with description -->
-<p class="subtitle">Advanced URL Security Analysis</p>
-</div>
-</div>
-<!-- Badge highlighting the live threat intelligence feed -->
-<div class="tech-badge">Real-time Threat Intelligence Mesh</div>
-</header>
-<!-- Glowing divider separating header from hero section -->
-<div class="holo-divider"></div>
-<!-- Header banner with shield icon and motion tagline -->
-<div class="header-banner">
-<!-- Shield emoji as security icon -->
-<div class="shield-icon">🛡️</div>
-<!-- Animated tagline reinforcing tech-forward positioning -->
-<p class="tech-tagline">Adaptive phishing detection with layered telemetry</p>
-</div>
-<!-- Form that submits to /check endpoint via POST -->
-<form action="/check" method="post">
-<!-- Text input for URL with placeholder text, autofocus, and required validation -->
-<input name="url" placeholder="🔍 Enter URL to analyze..." autofocus required>
-<!-- Submit button to trigger URL analysis -->
-<button type="submit">⚡ Analyze URL</button>
-</form>
-<!-- Features grid showcasing capabilities -->
-<div class="features">
-<!-- Feature box for heuristic analysis -->
-<div class="feature-box">
-<div class="feature-icon">🔬</div>
-<strong>Heuristic Analysis</strong>
-<p>Pattern-based threat detection</p>
-</div>
-<!-- Feature box for DNS validation -->
-<div class="feature-box">
-<div class="feature-icon">🌐</div>
-<strong>DNS Validation</strong>
-<p>MX & SPF record checks</p>
-</div>
-<!-- Feature box for API integration -->
-<div class="feature-box">
-<div class="feature-icon">🔐</div>
-<strong>Safe Browsing</strong>
-<p>Google threat database</p>
-</div>
-</div>
-<!-- Disclaimer note about the heuristic nature of the tool -->
-<p class="note">🛈 Multiple detection layers are applied (heuristics, DNS, Safe Browsing, threat intel). Rate limited to protect the service — please use responsibly.</p>
-<!-- Footer containing copyright notice -->
-<footer class="footer">2025 Demarick Webb-Rivera</footer>
-</div>
+<nav class="navbar">
+	<div class="nav-brand">
+		<img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
+		<div class="brand-copy">
+			<span class="brand-title">Safe URL Check</span>
+			<span class="brand-tagline">Modern Cybersecurity Intelligence</span>
+		</div>
+	</div>
+	<ul class="nav-links">
+		<li><a href="/" class="active">Home</a></li>
+		<li><a href="#scan">Scanner</a></li>
+	</ul>
+</nav>
+<main>
+	<section class="hero">
+		<img src="/static/logo.svg" alt="Safe URL Check shield" class="hero-logo">
+		<h1>Trust Every Click</h1>
+		<p class="hero-subtitle">We've got your back online 🛡️</p>
+		<a href="#scan" class="cta-button">Check a URL Now</a>
+	</section>
+	<section class="scan-panel" id="scan">
+		<div class="panel-header">
+			<h2>Let's Check That Link</h2>
+			<p>Paste any URL and we'll analyze it with advanced heuristics, DNS checks, and real-time threat intelligence—all in seconds.</p>
+		</div>
+		<form action="/check" method="post" class="scan-form">
+			<input name="url" placeholder="Paste a link here... (e.g., https://example.com)" required autofocus>
+			<button type="submit">🔍 Scan Now</button>
+		</form>
+		<p class="panel-note">Your privacy matters. We rate-limit requests and never store personal data.</p>
+	</section>
+	<section class="features-grid">
+		<article class="feature-card">
+			<span class="feature-icon">🔍</span>
+			<h3>Smart Pattern Detection</h3>
+			<p>We catch suspicious patterns like fake login pages, hidden redirects, and sketchy URL tricks automatically.</p>
+		</article>
+		<article class="feature-card">
+			<span class="feature-icon">🌐</span>
+			<h3>Domain Reputation</h3>
+			<p>Every link is cross-checked against domain age, DNS records, and registration info to spot red flags.</p>
+		</article>
+		<article class="feature-card">
+			<span class="feature-icon">⚡</span>
+			<h3>Real-Time Protection</h3>
+			<p>Powered by Google Safe Browsing, URLHaus, and AlienVault—updated constantly to keep you safe.</p>
+		</article>
+	</section>
+</main>
+<footer class="site-footer">
+	<div class="footer-overlay"></div>
+	<p>Designed by Demarick Webb Rivera</p>
+</footer>
 </body>
 </html>

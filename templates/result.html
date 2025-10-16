@@ -1,125 +1,126 @@
-<!-- HTML5 document type declaration -->
 <!doctype html>
-<!-- Root HTML element with English language attribute -->
 <html lang="en">
-<!-- Head section containing metadata and resources -->
 <head>
-<!-- Character encoding set to UTF-8 for proper text display -->
 <meta charset="utf-8">
-<!-- Viewport meta tag for responsive design on mobile devices -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- Page title for result page shown in browser tab -->
-<title>Result — Safe URL Check</title>
-<!-- Link to external CSS stylesheet -->
+<title>Scan Result — Safe URL Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/style.css">
 </head>
-<!-- Body section containing visible page content -->
 <body>
-<!-- Container div for centering and styling content -->
-<div class="container">
-<!-- Neon accent line at the top of the result panel -->
-<div class="neon-bar"></div>
-<!-- Header region combining logo and descriptor badge -->
-<header class="topbar">
-<!-- Brand wrapper for the logo asset and text -->
-<div class="brand">
-<!-- Inline image referencing the Demarick Webb-Rivera logo -->
-<img src="/static/logo.svg" alt="Demarick Webb-Rivera logo" class="brand-logo">
-<!-- Wrapper providing alignment for heading and subtitle -->
-<div class="brand-text">
-<!-- Main heading for the application -->
-<h1>Safe URL Check</h1>
-<!-- Subtitle with description -->
-<p class="subtitle">Advanced URL Security Analysis</p>
-</div>
-</div>
-<!-- Badge highlighting the analysis status -->
-<div class="tech-badge">Telemetry Report Generated</div>
-</header>
-<!-- Glowing divider separating header from result body -->
-<div class="holo-divider"></div>
-<!-- Header banner with adaptive icon for analysis outcome -->
-<div class="header-banner">
-<!-- Alert emoji as analysis icon -->
-<div class="shield-icon">{% if result.score < 30 %}✅{% elif result.score < 70 %}⚠️{% else %}🚨{% endif %}</div>
-<!-- Main heading for results page -->
-<h2 class="result-title">Analysis Complete</h2>
-</div>
-<!-- Display analyzed URL using Jinja2 template variable -->
-<p><strong>🔗 URL:</strong> {{ url }}</p>
-<!-- Display numerical score out of 100 with gradient styling -->
-<div class="score-display">{{ result.score }}</div>
-<p style="text-align:center; margin-top:-10px; color:#6dd5ed; font-size:1.2em;">/ 100</p>
-<!-- Display suggested action based on analysis -->
-<p style="text-align:center; font-size:1.3em; margin:20px 0;"><strong>📋 Suggested Action:</strong> {{ result.suggested_action }}</p>
-<!-- Conditional block to display score breakdown details -->
-{% if result.breakdown %}
-<!-- Subheading for score breakdown -->
-<h3>📊 Score Breakdown</h3>
-<!-- Table element for score breakdown entries -->
-<table class="breakdown-table">
-<!-- Table header row defining columns -->
-<thead>
-<tr>
-<th>Category</th>
-<th>Signal</th>
-<th>Weight</th>
-</tr>
-</thead>
-<!-- Table body containing each breakdown row -->
-<tbody>
-<!-- Iterate over each breakdown entry -->
-{% for item in result.breakdown %}
-<tr>
-<td>{{ item.category }}</td>
-<td>{{ item.message }}</td>
-<td>{% if item.points > 0 %}+{{ item.points }}{% else %}0{% endif %}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-{% endif %}
-<!-- Subheading for reasons list -->
-<h3>🔍 Detection Details</h3>
-<!-- Unordered list to display all analysis reasons -->
-<ul>
-<!-- Jinja2 for loop to iterate through each reason -->
-{% for r in result.reasons %}
-<!-- List item displaying each individual reason -->
-<li>{{ r }}</li>
-<!-- End of for loop -->
-{% endfor %}
-</ul>
-<!-- Conditional block to display external intelligence hits -->
-{% if result.intel_hits %}
-<!-- Subheading for intelligence hits -->
-<h3>🛰 External Intelligence</h3>
-<!-- Unordered list for intelligence hits -->
-<ul class="intel-list">
-<!-- Iterate over each intelligence hit -->
-{% for hit in result.intel_hits %}
-<li>
-<strong>{{ hit.source }}</strong>: {{ hit.description }}
-<span class="intel-pill severity-{{ hit.severity|default('unknown') }}">{{ hit.severity|default('unknown')|capitalize }}</span>
-</li>
-{% endfor %}
-</ul>
-{% endif %}
-<!-- Conditional block to show intelligence errors -->
-{% if result.intel_errors %}
-<!-- Subheading for intelligence errors -->
-<h3>ℹ️ Intelligence Notes</h3>
-<!-- Unordered list for error messages -->
-<ul class="intel-errors">
-{% for item in result.intel_errors %}
-<li>{{ item.source }}: {{ item.message }}</li>
-{% endfor %}
-</ul>
-{% endif %}
-<!-- Link to return to homepage and check another URL -->
-<p style="text-align:center; margin-top:40px;"><a href="/">← Check Another URL</a></p>
-<!-- Footer containing copyright notice -->
-<footer class="footer">2025 Demarick Webb-Rivera</footer>
-</div>
+<nav class="navbar">
+	<div class="nav-brand">
+		<img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
+		<div class="brand-copy">
+			<span class="brand-title">Safe URL Check</span>
+			<span class="brand-tagline">Modern Cybersecurity Intelligence</span>
+		</div>
+	</div>
+	<ul class="nav-links">
+		<li><a href="/">Home</a></li>
+		<li><a href="/" class="active">Scanner</a></li>
+	</ul>
+</nav>
+<main>
+	{% set status_class = 'status-safe' %}
+	{% set status_label = 'Verified' %}
+	{% set status_icon = '✓' %}
+	{% if result.score >= 30 and result.score < 70 %}
+		{% set status_class = 'status-warning' %}
+		{% set status_label = 'Review' %}
+		{% set status_icon = '!' %}
+	{% elif result.score >= 70 %}
+		{% set status_class = 'status-danger' %}
+		{% set status_label = 'Unsafe' %}
+		{% set status_icon = '✕' %}
+	{% endif %}
+	<section class="result-wrapper">
+		<header class="result-header">
+			<div class="status-block {{ status_class }}">
+				<div class="status-icon" aria-hidden="true">
+					<span>{{ status_icon }}</span>
+				</div>
+				<div class="status-copy">
+					<h1>Analysis Complete</h1>
+					<p class="status-label">{{ status_label }}</p>
+					<p class="status-action">{{ result.suggested_action }}</p>
+				</div>
+				<div class="score-badge">
+					<span class="score-number">{{ result.score }}</span>
+					<span class="score-label">Risk Index</span>
+				</div>
+			</div>
+			<p class="scanned-url"><span>Scanned URL</span> {{ url }}</p>
+		</header>
+		<section class="result-body">
+			{% if result.breakdown %}
+			<div class="panel">
+				<h2>Score Breakdown</h2>
+				<table class="breakdown-table">
+					<thead>
+						<tr>
+							<th>Category</th>
+							<th>Signal</th>
+							<th>Weight</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for item in result.breakdown %}
+						<tr>
+							<td>{{ item.category }}</td>
+							<td>{{ item.message }}</td>
+							<td>{% if item.points > 0 %}+{{ item.points }}{% else %}0{% endif %}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			{% endif %}
+			<div class="panel">
+				<h2>Detection Details</h2>
+				<ul class="detail-list">
+					{% for r in result.reasons %}
+					<li>{{ r }}</li>
+					{% endfor %}
+				</ul>
+			</div>
+			{% if result.intel_hits %}
+			<div class="panel">
+				<h2>External Intelligence</h2>
+				<ul class="intel-list">
+					{% for hit in result.intel_hits %}
+					<li>
+						<div class="intel-meta">
+							<strong>{{ hit.source }}</strong>
+							<span class="intel-pill severity-{{ hit.severity|default('unknown') }}">{{ hit.severity|default('unknown')|capitalize }}</span>
+						</div>
+						<p>{{ hit.description }}</p>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+			{% endif %}
+			{% if result.intel_errors %}
+			<div class="panel">
+				<h2>Intelligence Notes</h2>
+				<ul class="intel-errors">
+					{% for item in result.intel_errors %}
+					<li>{{ item.source }}: {{ item.message }}</li>
+					{% endfor %}
+				</ul>
+			</div>
+			{% endif %}
+		</section>
+		<div class="result-actions">
+			<a href="/" class="cta-link">Run Another Scan</a>
+		</div>
+	</section>
+</main>
+<footer class="site-footer">
+	<div class="footer-overlay"></div>
+	<p>Designed by Demarick Webb Rivera</p>
+</footer>
 </body>
 </html>
