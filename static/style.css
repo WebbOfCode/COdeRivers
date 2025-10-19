@@ -1,4 +1,19 @@
-﻿:root {
+/*
+  ==========================================================
+  Safe-URL-Check UI Theme
+  Tech/Abstract visual refresh with subtle grid overlays,
+  glow accents, and refined panel styling.
+  This stylesheet is organized in sections:
+  - Theme variables and light theme overrides
+  - Base resets and links
+  - Layout: navbar, hero, scan panel
+  - Result views and panels (including AI section)
+  - Health widget and footer
+  - Animations and media queries
+  ==========================================================
+*/
+
+:root {
   --color-bg: #040405;
   --color-surface: #0c0c10;
   --color-surface-alt: #14141c;
@@ -9,6 +24,10 @@
   --color-gold: #ffd700;
   --color-gold-soft: #e0b22d;
   --color-border: rgba(224, 178, 45, 0.35);
+  --color-cyan: #38e8ff;
+  --grid-line: rgba(224, 178, 45, 0.07);
+  --grid-line-strong: rgba(224, 178, 45, 0.12);
+  --accent-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.45);
   --shadow-glow: 0 0 25px rgba(224, 178, 45, 0.35);
   --font-family: "Montserrat", "Poppins", "Segoe UI", sans-serif;
@@ -37,8 +56,11 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-family);
-  background: radial-gradient(circle at top, rgba(192, 57, 43, 0.12), transparent 52%),
-    radial-gradient(circle at bottom, rgba(224, 178, 45, 0.15), transparent 55%),
+  /* Layered background with abstract light bleed */
+  background:
+    radial-gradient(circle at 15% -10%, rgba(56, 232, 255, 0.08), transparent 55%),
+    radial-gradient(circle at 85% 110%, rgba(224, 178, 45, 0.12), transparent 60%),
+    radial-gradient(circle at -10% 65%, rgba(192, 57, 43, 0.10), transparent 50%),
     var(--color-bg);
   color: var(--color-text);
   line-height: 1.7;
@@ -51,10 +73,26 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: linear-gradient(115deg, rgba(224, 178, 45, 0.05) 0%, rgba(192, 57, 43, 0.05) 38%, transparent 42%),
-    repeating-linear-gradient(0deg, transparent 0, transparent 6px, rgba(224, 178, 45, 0.04) 7px, rgba(224, 178, 45, 0.04) 9px);
+  /* Soft color wash and scanlines */
+  background-image:
+    linear-gradient(115deg, rgba(224, 178, 45, 0.06) 0%, rgba(192, 57, 43, 0.06) 38%, transparent 42%),
+    repeating-linear-gradient(0deg, transparent 0, transparent 7px, rgba(224, 178, 45, 0.035) 8px, rgba(224, 178, 45, 0.035) 10px);
   mix-blend-mode: screen;
-  opacity: 0.4;
+  opacity: 0.5;
+  z-index: -1;
+}
+
+/* Subtle animated tech grid overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(0deg, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 42px 42px, 42px 42px;
+  animation: gridDrift 26s linear infinite;
   z-index: -1;
 }
 
@@ -76,6 +114,7 @@ a:focus {
 }
 
 .navbar {
+  /* Frosted glass nav with accent underline */
   position: fixed;
   top: 0;
   left: 0;
@@ -436,7 +475,22 @@ main {
   content: "";
   position: absolute;
   inset: 0;
+  /* Subtle angular light wash */
   background: linear-gradient(135deg, rgba(224, 178, 45, 0.08), transparent 60%);
+  pointer-events: none;
+}
+
+/* Decorative corner accents for panels */
+.panel::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 90px;
+  height: 90px;
+  background: conic-gradient(from 180deg at 100% 0%, rgba(224, 178, 45, 0.2), transparent 35%);
+  filter: blur(6px);
+  opacity: 0.35;
   pointer-events: none;
 }
 
@@ -625,6 +679,38 @@ main {
   font-size: 1.15rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  position: relative;
+}
+.legal p,
+.legal li {
+  color: var(--color-text);
+}
+
+.legal p {
+  margin: 0 0 12px;
+}
+
+.legal .panel {
+  line-height: 1.8;
+}
+
+.legal code {
+  font-family: var(--accent-mono);
+  background: rgba(224, 178, 45, 0.08);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(224, 178, 45, 0.2);
+}
+
+.panel h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 86px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-gold), transparent);
+  opacity: 0.7;
 }
 
 .breakdown-table {
@@ -684,6 +770,71 @@ main {
   border-radius: 50%;
   background: var(--color-gold);
   box-shadow: 0 0 12px rgba(224, 178, 45, 0.5);
+}
+
+.ai-summary {
+  margin: 0 0 18px;
+  color: var(--color-text);
+}
+
+/* Dedicated AI section styling for tech feel */
+.ai-section {
+  background: linear-gradient(180deg, rgba(56, 232, 255, 0.06), rgba(20, 20, 30, 0.3)), var(--color-surface-alt);
+  border-color: rgba(56, 232, 255, 0.25);
+}
+
+.ai-section .ai-meta dd {
+  font-family: var(--accent-mono);
+  letter-spacing: 0.02em;
+}
+
+.ai-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin: 0 0 18px;
+}
+
+.ai-meta dt {
+  margin: 0 0 6px;
+  color: var(--color-muted);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.ai-meta dd {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.ai-risk {
+  font-weight: 600;
+}
+
+.ai-risk-high {
+  color: #ff8080;
+}
+
+.ai-risk-medium {
+  color: #ffbb66;
+}
+
+.ai-risk-low {
+  color: #7fda8c;
+}
+
+.signal-weight {
+  margin-left: 10px;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.ai-signals li::before {
+  background: rgba(224, 178, 45, 0.55);
 }
 
 .intel-list,
@@ -768,6 +919,138 @@ main {
   transform: translateX(4px);
 }
 
+.health-widget {
+  margin-top: 32px;
+  padding: 24px;
+  background: rgba(5, 5, 8, 0.6);
+  border: 1px solid rgba(224, 178, 45, 0.3);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.health-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(224, 178, 45, 0.2);
+}
+
+.health-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.health-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.health-healthy {
+  background: rgba(127, 218, 140, 0.2);
+  color: #7fda8c;
+  border: 1px solid #7fda8c;
+}
+
+.health-degraded {
+  background: rgba(255, 187, 102, 0.2);
+  color: #ffbb66;
+  border: 1px solid #ffbb66;
+}
+
+.health-critical {
+  background: rgba(255, 128, 128, 0.2);
+  color: #ff8080;
+  border: 1px solid #ff8080;
+}
+
+.health-services {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.health-service {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(12, 12, 16, 0.5);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.health-service:hover {
+  background: rgba(20, 20, 28, 0.7);
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-healthy {
+  background: #7fda8c;
+  box-shadow: 0 0 10px rgba(127, 218, 140, 0.5);
+}
+
+.status-degraded {
+  background: #ffbb66;
+  box-shadow: 0 0 10px rgba(255, 187, 102, 0.5);
+}
+
+.status-down {
+  background: #ff8080;
+  box-shadow: 0 0 10px rgba(255, 128, 128, 0.5);
+}
+
+.status-unconfigured {
+  background: var(--color-muted);
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+.service-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: 12px;
+}
+
+.service-name {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.service-status {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  letter-spacing: 0.05em;
+}
+
+@keyframes statusPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 @keyframes pulseGlow {
   0%,
   100% {
@@ -785,6 +1068,19 @@ main {
   }
   50% {
     transform: scale(1.05);
+  }
+}
+
+/* Slow drifting grid to enhance abstract tech aesthetic */
+@keyframes gridDrift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(12px, 8px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
   }
 }
 

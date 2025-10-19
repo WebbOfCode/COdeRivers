@@ -1,3 +1,13 @@
+"""
+integrations.py — External integrations for DNS, WHOIS, and Safe Browsing
+
+Functions:
+- get_mx_records / has_mx: DNS MX record checks
+- has_spf: SPF presence via TXT records
+- get_whois_info: Domain registration metadata
+- safe_browsing_check: Google Safe Browsing v4 lookup
+"""
+
 # Import DNS resolver library for MX and SPF record lookups
 import dns.resolver
 # Import WHOIS library for domain registration information
@@ -88,6 +98,11 @@ def safe_browsing_check(url: str, api_key: str = None) -> dict:
     Returns a dict with keys: ok (bool), matches (list) or error message.
     If api_key is None, will attempt to read from SAFE_BROWSING_API_KEY env var.
     """
+    # Validate URL is not empty or None
+    if not url or not url.strip():
+        # Return error for empty/invalid URLs
+        return {'ok': False, 'error': 'Invalid or empty URL provided'}
+    
     # Get API key from parameter or environment variable
     key = api_key or os.environ.get('SAFE_BROWSING_API_KEY')
     # Check if API key is available

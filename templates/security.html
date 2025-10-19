@@ -1,0 +1,80 @@
+<!--
+  Security — Safe-URL-Check
+  Purpose: Communicate security posture (rate limits, dependency hygiene,
+  external integrations, and vulnerability disclosure).
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security — Safe URL Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">
+    <img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
+    <div class="brand-copy">
+      <span class="brand-title">Safe URL Check</span>
+      <span class="brand-tagline">Modern Cybersecurity Intelligence</span>
+    </div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/">Scanner</a></li>
+    <li><a href="/privacy">Privacy</a></li>
+    <li><a href="/terms">Terms</a></li>
+    <li><a href="/security" class="active">Security</a></li>
+  </ul>
+</nav>
+
+<main>
+  <section class="result-wrapper legal">
+    <header class="result-header">
+      <div class="status-copy">
+        <h1>Security</h1>
+        <p class="status-label">Last updated: {{ last_updated or '2025-10-19' }}</p>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>Platform Posture</h2>
+      <ul class="detail-list">
+        <li>Rate limiting applied to scanning endpoints to deter abuse.</li>
+        <li>Input validation and output encoding across the stack.</li>
+        <li>Timeouts for outbound requests and safe user agent string.</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Dependencies</h2>
+      <p>We pin core dependencies in <code>requirements.txt</code> and periodically review security advisories. We recommend running scans inside an isolated environment.</p>
+    </section>
+
+    <section class="panel">
+      <h2>External Integrations</h2>
+      <p>Optional services (Google Safe Browsing, URLHaus, OTX) are accessed via HTTPS. API keys, when used, should be provided via environment variables and not committed to source control.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Responsible Disclosure</h2>
+      <p>If you discover a vulnerability, please email <a href="mailto:demarick54@gmail.com">demarick54@gmail.com</a> with details. We appreciate responsible disclosure and will aim to respond as quick as possible.</p>
+    </section>
+
+    <div class="result-actions">
+      <a href="/" class="cta-link">Back to Scanner</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-overlay"></div>
+  <p>Designed by Demarick Webb Rivera</p>
+  <p style="margin-top:8px; color: var(--color-muted);">© {{ current_year or '2025' }} Safe-URL-Check</p>
+</footer>
+</body>
+</html>

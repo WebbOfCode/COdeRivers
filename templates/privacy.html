@@ -1,0 +1,108 @@
+<!--
+  Privacy Policy — Safe-URL-Check
+  Purpose: Provide transparent details on data handling for users.
+  Sections: Overview, Data We Process, Use of Data, Retention, Security,
+  Third-Party Services, Your Rights, Contact.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy — Safe URL Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<!-- Shared navbar -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
+    <div class="brand-copy">
+      <span class="brand-title">Safe URL Check</span>
+      <span class="brand-tagline">Modern Cybersecurity Intelligence</span>
+    </div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/" >Scanner</a></li>
+    <li><a href="/privacy" class="active">Privacy</a></li>
+    <li><a href="/terms">Terms</a></li>
+    <li><a href="/security">Security</a></li>
+  </ul>
+  </nav>
+
+<main>
+  <!-- Legal content container -->
+  <section class="result-wrapper legal">
+    <header class="result-header">
+      <div class="status-copy">
+        <h1>Privacy Policy</h1>
+        <p class="status-label">Last updated: {{ last_updated or '2025-10-19' }}</p>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>Overview</h2>
+      <p>We respect your privacy. Safe-URL-Check is designed to analyze URLs without collecting personal information beyond what is necessary to perform the scan and operate the service.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Data We Process</h2>
+      <ul class="detail-list">
+        <li>Submitted URL(s) for analysis and threat intelligence checks.</li>
+        <li>Technical metadata (e.g., HTTP headers, response codes) from target sites.</li>
+        <li>Operational telemetry such as request count and latency for system health.</li>
+      </ul>
+      <p>We do not require account registration and do not intentionally collect names, emails, or other direct identifiers.</p>
+    </section>
+
+    <section class="panel">
+      <h2>How We Use Data</h2>
+      <ul class="detail-list">
+        <li>Provide URL risk assessments and explainable signals.</li>
+        <li>Query external threat intelligence providers where configured.</li>
+        <li>Maintain reliability and detect abuse via rate limiting.</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Retention</h2>
+      <p>By default, scans are handled in-memory and not stored persistently. If optional logging is enabled in the future, we will only retain minimal data required for troubleshooting or improving detection quality, and for the shortest time necessary.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Security</h2>
+      <p>We apply rate limits, validate inputs, and use secure requests to external providers. See our <a href="/security">Security</a> page for additional details.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Third-Party Services</h2>
+      <p>When configured, we may query services such as Google Safe Browsing, URLHaus, and AlienVault OTX to enhance threat detection. Requests to these services include the URL being checked and may be subject to their respective privacy policies.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Your Rights</h2>
+      <p>If you believe data has been collected about you inadvertently, or you would like to request deletion of logs related to your use, contact us using the details below.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Contact</h2>
+      <p>For privacy inquiries, contact: <a href="mailto:demarick54@gmail.com">demarick54@gmail.com</a></p>
+    </section>
+
+    <div class="result-actions">
+      <a href="/" class="cta-link">Back to Scanner</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-overlay"></div>
+  <p>Designed by Demarick Webb-Rivera</p>
+  <p style="margin-top:8px; color: var(--color-muted);">© {{ current_year or '2025' }} Safe-URL-Check</p>
+</footer>
+</body>
+</html>

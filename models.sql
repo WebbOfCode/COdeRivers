@@ -1,0 +1,7 @@
+--
+-- Safe-URL-Check — Database schema (placeholder)
+--
+-- This file is reserved for optional persistence (e.g., logging scans,
+-- caching intel hits, user accounts). Currently unused by the app.
+-- Add CREATE TABLE statements here if you enable a DB.
+--

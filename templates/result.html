@@ -1,3 +1,13 @@
+<!--
+	Safe-URL-Check — Result Page
+	Sections:
+	- Head: fonts and global stylesheet
+	- Navbar: shared across site
+	- Status header: overall risk label and score
+	- Result body: breakdown, details, external intel
+	- AI Summary: dedicated section with indicators and guidance
+	- Footer: attribution
+-->
 <!doctype html>
 <html lang="en">
 <head>
@@ -10,6 +20,7 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<!-- Top navigation with brand and links -->
 <nav class="navbar">
 	<div class="nav-brand">
 		<img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
@@ -23,6 +34,7 @@
 		<li><a href="/" class="active">Scanner</a></li>
 	</ul>
 </nav>
+<!-- Main content wrapper -->
 <main>
 	{% set status_class = 'status-safe' %}
 	{% set status_label = 'Verified' %}
@@ -36,8 +48,10 @@
 		{% set status_label = 'Unsafe' %}
 		{% set status_icon = '✕' %}
 	{% endif %}
+	<!-- Result container with status, panels, and actions -->
 	<section class="result-wrapper">
 		<header class="result-header">
+			<!-- Overall status card and score badge -->
 			<div class="status-block {{ status_class }}">
 				<div class="status-icon" aria-hidden="true">
 					<span>{{ status_icon }}</span>
@@ -54,6 +68,7 @@
 			</div>
 			<p class="scanned-url"><span>Scanned URL</span> {{ url }}</p>
 		</header>
+		<!-- Score breakdown and detection details grid -->
 		<section class="result-body">
 			{% if result.breakdown %}
 			<div class="panel">
@@ -113,6 +128,125 @@
 			</div>
 			{% endif %}
 		</section>
+		{% if result.ai_analysis %}
+		<!-- Dedicated AI Summary section placed under the main results grid -->
+		<section class="panel ai-section">
+			<h2>AI Summary and Guidance</h2>
+			{% if result.ai_analysis.status == 'ok' %}
+				<p class="ai-summary">{{ result.ai_analysis.summary }}</p>
+				<dl class="ai-meta">
+					<div>
+						<dt>Risk Level</dt>
+						<dd class="ai-risk ai-risk-{{ result.ai_analysis.risk_label }}">{{ result.ai_analysis.risk_label|capitalize }} ({{ result.ai_analysis.risk_score }})</dd>
+					</div>
+					<div>
+						<dt>Confidence</dt>
+						<dd>{{ (result.ai_analysis.confidence * 100)|round(0) }}%</dd>
+					</div>
+					{% if result.ai_analysis.metadata and result.ai_analysis.metadata.final_url %}
+					<div>
+						<dt>Final URL</dt>
+						<dd>{{ result.ai_analysis.metadata.final_url }}</dd>
+					</div>
+					{% endif %}
+				</dl>
+				{% set f = result.ai_analysis.features or {} %}
+				<div class="result-body" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+					<div>
+						<h3 style="margin-top:0">Key Indicators</h3>
+						<ul class="detail-list ai-signals">
+							{% if f.external_forms %}
+							<li>{{ f.external_forms }} form(s) submit to other domains</li>
+							{% endif %}
+							{% if f.password_fields %}
+							<li>Password field(s) detected in page forms</li>
+							{% endif %}
+							{% if f.obfuscated_scripts %}
+							<li>Obfuscated JavaScript patterns: {{ f.obfuscated_scripts }}</li>
+							{% endif %}
+							{% if f.urgent_hits %}
+							<li>Urgent or security phrasing repeated ({{ f.urgent_hits }} hits)</li>
+							{% endif %}
+							{% if f.brand_impersonation %}
+							<li>Brand references that don’t match domain: {{ f.brand_impersonation|join(', ') }}</li>
+							{% endif %}
+							{% if f.suspicious_terms and f.suspicious_terms|length > 0 %}
+							<li>Suspicious terms: {{ (f.suspicious_terms[:8])|join(', ') }}</li>
+							{% endif %}
+							{% if f.total_links and f.external_ratio and f.external_ratio >= 0.5 %}
+							<li>{{ (f.external_ratio * 100)|round(0) }}% of {{ f.total_links }} links point off-site</li>
+							{% endif %}
+							{% if f.shortener_used %}
+							<li>URL shortener domain detected</li>
+							{% endif %}
+						</ul>
+					</div>
+					<div>
+						<h3 style="margin-top:0">Recommendations</h3>
+						<ul class="detail-list">
+							{% set risk = result.ai_analysis.risk_label %}
+							{% if risk in ['high','medium'] %}
+							<li>Avoid entering any credentials or personal information on this page.</li>
+							{% endif %}
+							{% if f.password_fields or f.external_forms %}
+							<li>If this is unexpected, close the page and navigate directly to the known site by typing the URL.</li>
+							{% endif %}
+							{% if f.brand_impersonation %}
+							<li>Verify the domain matches the referenced brand; contact the brand via official channels.</li>
+							{% endif %}
+							{% if f.shortener_used %}
+							<li>Expand the short URL before visiting (use a trusted URL expander or preview feature).</li>
+							{% endif %}
+							{% if f.obfuscated_scripts %}
+							<li>Ensure your browser and security tools are up to date; avoid enabling scripts from unknown sources.</li>
+							{% endif %}
+							<li>Consider scanning with multiple tools and keep anti‑malware protection active.</li>
+						</ul>
+					</div>
+				</div>
+				{% if result.ai_analysis.signals %}
+				<h3>Top AI Signals</h3>
+				<ul class="detail-list ai-signals">
+					{% for sig in (result.ai_analysis.signals|sort(attribute='weight', reverse=True))[:5] %}
+					<li>{{ sig.message }}{% if sig.weight %} <span class="signal-weight">{% if sig.weight > 0 %}+{% endif %}{{ sig.weight }} pts</span>{% endif %}</li>
+					{% endfor %}
+				</ul>
+				{% endif %}
+				{% if result.ai_analysis.metadata %}
+				<h3>Technical Metadata</h3>
+				<dl class="ai-meta">
+					{% if result.ai_analysis.metadata.status_code %}
+					<div>
+						<dt>Status Code</dt>
+						<dd>{{ result.ai_analysis.metadata.status_code }}</dd>
+					</div>
+					{% endif %}
+					{% if result.ai_analysis.metadata.content_type %}
+					<div>
+						<dt>Content Type</dt>
+						<dd>{{ result.ai_analysis.metadata.content_type }}</dd>
+					</div>
+					{% endif %}
+					{% if result.ai_analysis.metadata.redirect_count is not none %}
+					<div>
+						<dt>Redirects</dt>
+						<dd>{{ result.ai_analysis.metadata.redirect_count }}</dd>
+					</div>
+					{% endif %}
+					{% if result.ai_analysis.metadata.analysis_version %}
+					<div>
+						<dt>Analyzer</dt>
+						<dd>v{{ result.ai_analysis.metadata.analysis_version }}</dd>
+					</div>
+					{% endif %}
+				</dl>
+				{% endif %}
+			{% else %}
+				<p class="ai-summary">{{ result.ai_analysis.error or 'AI analysis unavailable' }}</p>
+			{% endif %}
+		</section>
+		{% endif %}
+		<!-- Primary navigation to rescan -->
 		<div class="result-actions">
 			<a href="/" class="cta-link">Run Another Scan</a>
 		</div>
@@ -121,6 +255,9 @@
 <footer class="site-footer">
 	<div class="footer-overlay"></div>
 	<p>Designed by Demarick Webb Rivera</p>
+	<p style="margin-top:8px; color: var(--color-muted);">
+		<a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/security">Security</a>
+	</p>
 </footer>
 </body>
 </html>

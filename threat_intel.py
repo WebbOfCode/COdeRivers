@@ -1,3 +1,14 @@
+"""
+threat_intel.py — Aggregate external threat intelligence sources
+
+Sources supported:
+- URLHaus (requires API key)
+- AlienVault OTX (optional API key)
+
+Each query function returns (hits, errors) to preserve transparency and
+prevent a single source failure from breaking analysis.
+"""
+
 # Import os module to access environment variables for API keys
 import os
 # Import typing utilities for type annotations
@@ -22,22 +33,51 @@ def query_urlhaus(url: str) -> IntelResult:
     hits: List[IntelHit] = []
     # Initialize list that will store any errors encountered
     errors: List[IntelError] = []
+    
+    # Validate URL is not empty
+    if not url or not url.strip():
+        # Return empty results for invalid URLs without logging error
+        return hits, errors
+    
+    # URLHaus API now requires authentication - check for API key
+    api_key = os.environ.get('URLHAUS_API_KEY')
+    
     # Define the endpoint for the URLHaus lookup API
     endpoint = 'https://urlhaus-api.abuse.ch/v1/url/'
     # Create payload dictionary with target URL
     payload = {'url': url}
+    # Prepare headers with User-Agent (required by URLHaus)
+    headers = {
+        'User-Agent': 'Safe-URL-Check/2.0 (https://github.com/WebbOfCode/Safe-URL-Check)',
+        'Accept': 'application/json'
+    }
+    
+    # Add API key to headers if configured
+    if api_key:
+        headers['Auth-Key'] = api_key
+    
     # Try block to handle network operations safely
     try:
-        # Issue POST request with JSON response expected
-        response = requests.post(endpoint, data=payload, timeout=10)
-        # Raise HTTPError if status code is not successful
+        # Issue POST request with headers and JSON response expected
+        response = requests.post(endpoint, data=payload, headers=headers, timeout=10)
+        
+        # Check if we got 401 Unauthorized (API key required)
+        if response.status_code == 401:
+            # Log that URLHaus now requires API key
+            errors.append({
+                'source': 'URLHaus',
+                'message': 'API key required (get free key at https://urlhaus.abuse.ch/api/)'
+            })
+            return hits, errors
+        
+        # Raise HTTPError for other non-successful status codes
         response.raise_for_status()
         # Parse JSON from the response body
         data = response.json()
         # Check whether the query completed successfully
         if data.get('query_status') == 'ok':
             # Extract threat signature name if present
-            signature = data.get('signature', 'Unknown threat')
+            signature = data.get('threat', data.get('signature', 'Unknown threat'))
             # Extract URLHaus threat status value
             status = data.get('url_status', 'unknown')
             # Build hit dictionary with metadata
@@ -72,6 +112,12 @@ def query_otx(url: str) -> IntelResult:
     hits: List[IntelHit] = []
     # Initialize list for storing encountered errors
     errors: List[IntelError] = []
+    
+    # Validate URL is not empty
+    if not url or not url.strip():
+        # Return empty results for invalid URLs without logging error
+        return hits, errors
+    
     # Retrieve API key from environment variables
     api_key = os.environ.get('OTX_API_KEY')
     # If no API key configured then exit early with configuration notice

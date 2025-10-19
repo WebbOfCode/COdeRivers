@@ -1,3 +1,13 @@
+<!--
+	Safe-URL-Check — Landing and Scanner Page
+	Sections:
+	- Head: fonts and global stylesheet
+	- Navbar: brand and navigation
+	- Hero: headline and call-to-action
+	- Scan panel: URL form and health widget
+	- Features grid: product highlights
+	- Footer: attribution
+-->
 <!doctype html>
 <html lang="en">
 <head>
@@ -10,6 +20,7 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<!-- Top navigation with brand and links -->
 <nav class="navbar">
 	<div class="nav-brand">
 		<img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
@@ -23,13 +34,16 @@
 		<li><a href="#scan">Scanner</a></li>
 	</ul>
 </nav>
+<!-- Main content wrapper -->
 <main>
+    <!-- Hero: visual intro and CTA -->
 	<section class="hero">
 		<img src="/static/logo.svg" alt="Safe URL Check shield" class="hero-logo">
 		<h1>Trust Every Click</h1>
 		<p class="hero-subtitle">We've got your back online 🛡️</p>
 		<a href="#scan" class="cta-button">Check a URL Now</a>
 	</section>
+	<!-- Scanner panel: form + system health -->
 	<section class="scan-panel" id="scan">
 		<div class="panel-header">
 			<h2>Let's Check That Link</h2>
@@ -40,7 +54,41 @@
 			<button type="submit">🔍 Scan Now</button>
 		</form>
 		<p class="panel-note">Your privacy matters. We rate-limit requests and never store personal data.</p>
+		
+		<!-- API Health Status Widget -->
+		<div class="health-widget">
+			<div class="health-header">
+				<h3>🔧 System Status</h3>
+				{% if health %}
+				<span class="health-badge health-{{ health.overall_status }}">
+					{{ health.health_percentage }}% Operational
+				</span>
+				{% endif %}
+			</div>
+			{% if health and health.services %}
+			<div class="health-services">
+				{% for service in health.services %}
+				<div class="health-service">
+					<span class="status-indicator status-{{ service.status }}"></span>
+					<div class="service-info">
+						<span class="service-name">{{ service.service }}</span>
+						{% if service.status == 'healthy' %}
+						<span class="service-status">✓ {{ service.latency_ms }}ms</span>
+						{% elif service.status == 'unconfigured' %}
+						<span class="service-status">○ Optional</span>
+						{% elif service.status == 'degraded' %}
+						<span class="service-status">⚠ Degraded</span>
+						{% else %}
+						<span class="service-status">✗ Unavailable</span>
+						{% endif %}
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+			{% endif %}
+		</div>
 	</section>
+	<!-- Key features (static copy) -->
 	<section class="features-grid">
 		<article class="feature-card">
 			<span class="feature-icon">🔍</span>
@@ -57,11 +105,30 @@
 			<h3>Real-Time Protection</h3>
 			<p>Powered by Google Safe Browsing, URLHaus, and AlienVault—updated constantly to keep you safe.</p>
 		</article>
+		<article class="feature-card">
+			<span class="feature-icon">🔒</span>
+			<h3>SSL Certificate Verification</h3>
+			<p>Automatic validation of HTTPS certificates, expiration dates, and issuer authenticity for extra security.</p>
+		</article>
+		<article class="feature-card">
+			<span class="feature-icon">📄</span>
+			<h3>Content Analysis</h3>
+			<p>Deep inspection of page HTML, forms, and scripts to detect phishing attempts and malicious code.</p>
+		</article>
+		<article class="feature-card">
+			<span class="feature-icon">🛡️</span>
+			<h3>Multi-Layer Verification</h3>
+			<p>Combining heuristics, threat intel, HTTP headers, and content analysis for maximum accuracy.</p>
+		</article>
 	</section>
 </main>
+<!-- Footer and overlay visuals -->
 <footer class="site-footer">
 	<div class="footer-overlay"></div>
-	<p>Designed by Demarick Webb Rivera</p>
+		<p>Designed by Demarick Webb Rivera</p>
+		<p style="margin-top:8px; color: var(--color-muted);">
+			<a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/security">Security</a>
+		</p>
 </footer>
 </body>
 </html>

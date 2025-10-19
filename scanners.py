@@ -1,3 +1,16 @@
+"""
+scanners.py — Core URL analysis pipeline
+
+Responsibilities:
+- Parse and validate input URL
+- Apply heuristic signals (domain/TLD, keywords, structure)
+- Query integrations (DNS, WHOIS, Safe Browsing)
+- Aggregate threat intelligence sources
+- Run enhanced accuracy checks (SSL, headers, content, reputation)
+- Incorporate AI content analysis
+- Produce a comprehensive result dict consumed by templates
+"""
+
 # Import regular expression module for pattern matching
 import re
 # Import math module for non-linear score aggregation
@@ -8,6 +21,10 @@ from urllib.parse import urlparse
 from integrations import has_mx, has_spf, get_whois_info, safe_browsing_check
 # Import threat intelligence aggregation helper
 from threat_intel import collect_threat_intel
+# Import enhanced accuracy verification tools
+from accuracy_enhancements import enhanced_url_verification
+# Import AI-style site analyzer for content-driven insights
+from ai_analyzer import analyze_site_with_ai
 
 
 # Set of suspicious top-level domains commonly used for phishing
@@ -49,7 +66,7 @@ def analyze_url(url: str) -> dict:
         # Append entry to breakdown list with metadata
         breakdown.append({'points': weight, 'category': category, 'message': message})
 
-    # Try to parse the provided URL safely
+    # 1) Parse the URL safely (default to http when scheme is missing)
     try:
         # Parse URL, defaulting to http scheme when missing
         parsed = urlparse(url if '://' in url else 'http://' + url)
@@ -70,6 +87,7 @@ def analyze_url(url: str) -> dict:
     # Extract path segment for keyword scanning
     path = parsed.path or ''
 
+    # 2) Heuristics — network and domain structure
     # Evaluate whether hostname is presented as raw IP address
     if looks_like_ip(host):
         # Record network based signal with high weight
@@ -103,6 +121,7 @@ def analyze_url(url: str) -> dict:
         # Record subdomain heavy structure heuristic
         record(7, 'Hostname contains multiple nested subdomains', 'domain structure')
 
+    # 3) Infrastructure checks — DNS, SPF, WHOIS
     # Capture domain for DNS and WHOIS lookups
     domain = host
     # Execute DNS and WHOIS checks when domain is available
@@ -131,6 +150,7 @@ def analyze_url(url: str) -> dict:
             # Record lookup failure with zero weight for transparency
             record(0, f'DNS/WHOIS lookup failed: {dns_error}', 'infrastructure')
 
+    # 4) External reputation — Google Safe Browsing
     # Issue Google Safe Browsing lookup for reputation signal
     sb = safe_browsing_check(url)
     # When Safe Browsing query succeeds inspect matches
@@ -148,6 +168,7 @@ def analyze_url(url: str) -> dict:
         # Record failure message with zero scoring weight
         record(0, f'Safe Browsing lookup failed: {sb.get("error")}', 'external intel')
 
+    # 5) Threat Intelligence feeds (URLHaus, OTX)
     # Aggregate external intelligence feeds for additional signals
     intel_result = collect_threat_intel(url)
     # Extract list of hits from aggregated intelligence
@@ -172,6 +193,69 @@ def analyze_url(url: str) -> dict:
         # Record informational note with zero scoring weight
         record(0, error_message, 'external intel')
 
+    # 6) Enhanced accuracy checks (SSL/TLS, headers, content, reputation)
+    enhanced_checks = {}
+    try:
+        # Execute comprehensive URL verification with SSL, headers, content analysis
+        enhanced_checks = enhanced_url_verification(url)
+        # Get total score impact from enhanced checks
+        enhanced_impact = enhanced_checks.get('total_score_impact', 0)
+        
+        # Add enhanced check results to scoring
+        if enhanced_impact != 0:
+            # Record enhanced verification impact
+            score_inputs.append(max(0, enhanced_impact))  # Only add positive impacts to score
+            
+            # Add specific findings from SSL certificate check
+            if 'ssl_certificate' in enhanced_checks:
+                ssl_check = enhanced_checks['ssl_certificate']
+                if ssl_check.get('message'):
+                    record(ssl_check['score_impact'], ssl_check['message'], 'ssl/tls')
+            
+            # Add specific findings from HTTP headers check
+            if 'http_headers' in enhanced_checks:
+                headers_check = enhanced_checks['http_headers']
+                for message in headers_check.get('messages', []):
+                    record(headers_check['score_impact'], message, 'http security')
+            
+            # Add specific findings from content analysis
+            if 'page_content' in enhanced_checks:
+                content_check = enhanced_checks['page_content']
+                for indicator in content_check.get('indicators', []):
+                    record(content_check['score_impact'], indicator, 'content analysis')
+            
+            # Add specific findings from domain reputation
+            if 'domain_reputation' in enhanced_checks:
+                rep_check = enhanced_checks['domain_reputation']
+                for source in rep_check.get('reputation_sources', []):
+                    record(rep_check['score_impact'], source, 'reputation')
+    # Handle errors in enhanced checks gracefully
+    except Exception as enhanced_error:
+        # Record error but don't fail the entire analysis
+        record(0, f'Enhanced verification unavailable: {str(enhanced_error)[:100]}', 'accuracy checks')
+
+    # 7) AI-style content analyzer for content-driven context
+    ai_analysis = {}
+    try:
+        ai_analysis = analyze_site_with_ai(url)
+        ai_status = ai_analysis.get('status')
+        if ai_status == 'ok':
+            ai_score = ai_analysis.get('risk_score') or 0
+            ai_summary = ai_analysis.get('summary', '')
+            message = ai_summary[:140] + ('...' if len(ai_summary) > 140 else '')
+            if ai_score >= 65:
+                record(30, f'AI review flagged high risk: {message}', 'ai analysis')
+            elif ai_score >= 40:
+                record(15, f'AI review noted concerns: {message}', 'ai analysis')
+            else:
+                record(0, 'AI review did not find high risk patterns', 'ai analysis')
+        else:
+            record(0, f"AI review unavailable: {ai_analysis.get('error', 'unknown error')}", 'ai analysis')
+    except Exception as ai_error:
+        ai_analysis = {'status': 'error', 'error': str(ai_error)}
+        record(0, f'AI review failed: {str(ai_error)[:100]}', 'ai analysis')
+
+    # 8) Aggregate final score with diminishing returns
     # Define helper to compute non-linear aggregate risk score
     def aggregate_score(inputs):
         # Return early when there are no scoring inputs
@@ -212,4 +296,6 @@ def analyze_url(url: str) -> dict:
         'breakdown': breakdown,
         'intel_hits': intel_hits,
         'intel_errors': intel_errors,
+        'enhanced_checks': enhanced_checks,
+        'ai_analysis': ai_analysis,
     }

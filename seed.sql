@@ -1,0 +1,6 @@
+--
+-- Safe-URL-Check — Seed data (placeholder)
+--
+-- Use this file to insert baseline rows for development environments,
+-- such as sample scan records or configuration defaults.
+--

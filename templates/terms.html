@@ -1,0 +1,85 @@
+<!--
+  Terms of Service — Safe-URL-Check
+  Purpose: Define acceptable use, disclaimers, and liability terms.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terms of Service — Safe URL Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">
+    <img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
+    <div class="brand-copy">
+      <span class="brand-title">Safe URL Check</span>
+      <span class="brand-tagline">Modern Cybersecurity Intelligence</span>
+    </div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/">Scanner</a></li>
+    <li><a href="/privacy">Privacy</a></li>
+    <li><a href="/terms" class="active">Terms</a></li>
+    <li><a href="/security">Security</a></li>
+  </ul>
+</nav>
+
+<main>
+  <section class="result-wrapper legal">
+    <header class="result-header">
+      <div class="status-copy">
+        <h1>Terms of Service</h1>
+        <p class="status-label">Last updated: {{ last_updated or '2025-10-19' }}</p>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>Acceptable Use</h2>
+      <p>You agree to use Safe-URL-Check only for lawful purposes. Do not submit URLs that you do not have the right to analyze, or use the service to disrupt or probe systems without authorization.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Service Description</h2>
+      <p>Safe-URL-Check provides heuristic and intelligence-assisted risk assessments for URLs. Results are probabilistic and may include false positives or negatives.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Disclaimers</h2>
+      <p>The service is provided “as is” and without warranties of any kind. We do not guarantee accuracy, availability, or fitness for a particular purpose. You assume all risk from using or relying on the results.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Limitation of Liability</h2>
+      <p>To the maximum extent permitted by law, Safe-URL-Check and its contributors shall not be liable for any indirect, incidental, special, consequential or punitive damages, or any loss of profits or revenues.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Changes</h2>
+      <p>We may update these Terms from time to time. Material changes will be reflected on this page with an updated effective date.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Contact</h2>
+      <p>For questions regarding these Terms, contact: <a href="mailto:demarick54@gmail.com">demarick54@gmail.com</a></p>
+    </section>
+
+    <div class="result-actions">
+      <a href="/" class="cta-link">Back to Scanner</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-overlay"></div>
+  <p>Curated and Designed by Demarick Webb-Rivera</p>
+  <p style="margin-top:8px; color: var(--color-muted);">© {{ current_year or '2025' }} Safe-URL-Check</p>
+</footer>
+</body>
+</html>
