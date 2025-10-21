@@ -77,10 +77,10 @@
 						<span class="service-name">{{ service.service }}</span>
 						{% if service.status == 'healthy' %}
 						<span class="service-status">✓ {{ service.latency_ms }}ms</span>
-						{% elif service.status == 'unconfigured' %}
-						<span class="service-status">○ Optional</span>
 						{% elif service.status == 'degraded' %}
 						<span class="service-status">⚠ Degraded</span>
+						{% elif service.status == 'down' %}
+						<span class="service-status">✗ Not configured / Unreachable (required)</span>
 						{% else %}
 						<span class="service-status">✗ Unavailable</span>
 						{% endif %}

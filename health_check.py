@@ -44,13 +44,13 @@ def check_safe_browsing_health() -> HealthStatus:
     # Start timer to measure response time
     start_time = time.time()
     
-    # If no API key configured
+    # If no API key configured treat as required and report down
     if not api_key:
         return {
             'service': 'Google Safe Browsing',
-            'status': 'unconfigured',
+            'status': 'down',
             'latency_ms': 0,
-            'message': 'API key not configured in environment',
+            'message': 'API key not configured in environment (required)',
             'timestamp': datetime.utcnow().isoformat()
         }
     
@@ -114,6 +114,16 @@ def check_urlhaus_health() -> HealthStatus:
     # Start timer to measure response time
     start_time = time.time()
     
+    # Require an API key for URLHaus; if missing report down
+    if not api_key:
+        return {
+            'service': 'URLHaus',
+            'status': 'down',
+            'latency_ms': 0,
+            'message': 'API key not configured in environment (required)',
+            'timestamp': datetime.utcnow().isoformat()
+        }
+
     # Try to ping the URLHaus API with a test URL
     try:
         # Define the endpoint for the URLHaus lookup API
@@ -139,7 +149,7 @@ def check_urlhaus_health() -> HealthStatus:
         if response.status_code == 401:
             return {
                 'service': 'URLHaus',
-                'status': 'unconfigured',
+                'status': 'down',
                 'latency_ms': round(latency, 2),
                 'message': 'API key required (get free key at https://urlhaus.abuse.ch/api/)',
                 'timestamp': datetime.utcnow().isoformat()
@@ -197,13 +207,13 @@ def check_otx_health() -> HealthStatus:
     # Start timer to measure response time
     start_time = time.time()
     
-    # If no API key configured
+    # If no API key configured treat as required and report down
     if not api_key:
         return {
             'service': 'AlienVault OTX',
-            'status': 'unconfigured',
+            'status': 'down',
             'latency_ms': 0,
-            'message': 'API key not configured (optional)',
+            'message': 'API key not configured in environment (required)',
             'timestamp': datetime.utcnow().isoformat()
         }
     
@@ -384,14 +394,11 @@ def get_overall_health() -> Dict[str, Any]:
     # Get all individual health statuses
     statuses = get_all_health_status()
     
-    # Count services by status
+    # Count services by status (treat all declared checks as required)
     healthy_count = sum(1 for s in statuses if s['status'] == 'healthy')
     total_services = len(statuses)
-    unconfigured_count = sum(1 for s in statuses if s['status'] == 'unconfigured')
-    
-    # Calculate health percentage (excluding unconfigured services)
-    active_services = total_services - unconfigured_count
-    health_percentage = (healthy_count / active_services * 100) if active_services > 0 else 0
+    # Calculate health percentage over all services (no exclusions)
+    health_percentage = (healthy_count / total_services * 100) if total_services > 0 else 0
     
     # Determine overall status
     if health_percentage == 100:
@@ -406,7 +413,7 @@ def get_overall_health() -> Dict[str, Any]:
         'overall_status': overall_status,
         'health_percentage': round(health_percentage, 1),
         'healthy_services': healthy_count,
-        'total_services': active_services,
+        'total_services': total_services,
         'services': statuses,
         'timestamp': datetime.utcnow().isoformat()
     }
