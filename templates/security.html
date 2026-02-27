@@ -1,80 +1,111 @@
-<!--
-  Security — Safe-URL-Check
-  Purpose: Communicate security posture (rate limits, dependency hygiene,
-  external integrations, and vulnerability disclosure).
--->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Security — Safe URL Check</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security — Safe URL Check</title>
+  <meta name="description" content="Security practices and vulnerability disclosure.">
+  <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
-<nav class="navbar">
-  <div class="nav-brand">
-    <img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
-    <div class="brand-copy">
-      <span class="brand-title">Safe URL Check</span>
-      <span class="brand-tagline">Modern Cybersecurity Intelligence</span>
+
+  <div class="trust-bar">
+    <div class="container">
+      <div class="trust-bar-inner">
+        <div class="trust-item">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Security-First Architecture</span>
+        </div>
+      </div>
     </div>
   </div>
-  <ul class="nav-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="/">Scanner</a></li>
-    <li><a href="/privacy">Privacy</a></li>
-    <li><a href="/terms">Terms</a></li>
-    <li><a href="/security" class="active">Security</a></li>
-  </ul>
-</nav>
 
-<main>
-  <section class="result-wrapper legal">
-    <header class="result-header">
-      <div class="status-copy">
-        <h1>Security</h1>
-        <p class="status-label">Last updated: {{ last_updated or '2025-10-19' }}</p>
-      </div>
-    </header>
-
-    <section class="panel">
-      <h2>Platform Posture</h2>
-      <ul class="detail-list">
-        <li>Rate limiting applied to scanning endpoints to deter abuse.</li>
-        <li>Input validation and output encoding across the stack.</li>
-        <li>Timeouts for outbound requests and safe user agent string.</li>
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="/" class="nav-brand">
+        <img src="/static/logo.svg" alt="" class="nav-logo">
+        <span class="brand-title">Safe URL Check</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Scanner</a></li>
+        <li><a href="/privacy">Privacy</a></li>
+        <li><a href="/security" class="active">Security</a></li>
       </ul>
-    </section>
-
-    <section class="panel">
-      <h2>Dependencies</h2>
-      <p>We pin core dependencies in <code>requirements.txt</code> and periodically review security advisories. We recommend running scans inside an isolated environment.</p>
-    </section>
-
-    <section class="panel">
-      <h2>External Integrations</h2>
-      <p>Optional services (Google Safe Browsing, URLHaus, OTX) are accessed via HTTPS. API keys, when used, should be provided via environment variables and not committed to source control.</p>
-    </section>
-
-    <section class="panel">
-      <h2>Responsible Disclosure</h2>
-      <p>If you discover a vulnerability, please email <a href="mailto:demarick54@gmail.com">demarick54@gmail.com</a> with details. We appreciate responsible disclosure and will aim to respond as quick as possible.</p>
-    </section>
-
-    <div class="result-actions">
-      <a href="/" class="cta-link">Back to Scanner</a>
     </div>
-  </section>
-</main>
+  </nav>
 
-<footer class="site-footer">
-  <div class="footer-overlay"></div>
-  <p>Designed by Demarick Webb Rivera</p>
-  <p style="margin-top:8px; color: var(--color-muted);">© {{ current_year or '2025' }} Safe-URL-Check</p>
-</footer>
+  <main>
+    <section class="legal-section">
+      <div class="legal-container">
+        <header class="legal-header">
+          <h1>Security</h1>
+          <p>Our security practices and responsible disclosure policy</p>
+        </header>
+
+        <div class="legal-content">
+          <section>
+            <h2>Security Architecture</h2>
+            <ul>
+              <li><strong>Input Sanitization</strong> — All URLs are validated and sanitized before processing to prevent injection attacks.</li>
+              <li><strong>Request Timeouts</strong> — All external requests have strict timeouts (5-10 seconds) to prevent resource exhaustion.</li>
+              <li><strong>Rate Limiting</strong> — API endpoints are rate-limited to prevent abuse (60 requests/minute per IP).</li>
+              <li><strong>HTTPS Everywhere</strong> — All external API communications use TLS 1.2 or higher.</li>
+              <li><strong>Memory-Only Processing</strong> — Scan data never touches persistent storage.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Dependency Management</h2>
+            <p>We regularly audit dependencies for known vulnerabilities:</p>
+            <ul>
+              <li>Flask — Web framework (latest stable)</li>
+              <li>Requests — HTTP library with timeout enforcement</li>
+              <li>BeautifulSoup4 — HTML parsing</li>
+              <li>dnspython — DNS resolution</li>
+              <li>python-whois — WHOIS lookups</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Responsible Disclosure</h2>
+            <p>We take security seriously and appreciate the work of security researchers. If you believe you've found a vulnerability:</p>
+            <ul>
+              <li>Email: <a href="mailto:help@demarickwebb.dev">help@demarickwebb.dev</a></li>
+              <li>Allow reasonable time for remediation before public disclosure</li>
+              <li>Provide detailed reproduction steps</li>
+            </ul>
+            <p>We commit to:</p>
+            <ul>
+              <li>Acknowledging receipt within 48 hours</li>
+              <li>Providing a timeline for fixes</li>
+              <li>Not taking legal action against good-faith research</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Security Roadmap</h2>
+            <ul>
+              <li>SOC 2 Type II assessment (Q2 2025)</li>
+              <li>Bug bounty program launch</li>
+              <li>Independent security audit</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div class="footer-status">
+          <span class="status-dot-online"></span>
+          <span>All systems operational</span>
+        </div>
+        <p class="footer-copy"><a href="/">← Back to scanner</a></p>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>

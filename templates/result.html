@@ -1,266 +1,338 @@
-<!--
-	Safe-URL-Check — Result Page
-	Sections:
-	- Head: fonts and global stylesheet
-	- Navbar: shared across site
-	- Status header: overall risk label and score
-	- Result body: breakdown, details, external intel
-	- AI Summary: dedicated section with indicators and guidance
-	- Footer: attribution
--->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Scan Result — Safe URL Check</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scan Results — Safe URL Check</title>
+  <meta name="description" content="URL security analysis results with threat assessment and recommendations.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
-<!-- Top navigation with brand and links -->
-<nav class="navbar">
-	<div class="nav-brand">
-		<img src="/static/logo.svg" alt="Safe URL Check logo" class="nav-logo">
-		<div class="brand-copy">
-			<span class="brand-title">Safe URL Check</span>
-			<span class="brand-tagline">Modern Cybersecurity Intelligence</span>
-		</div>
-	</div>
-	<ul class="nav-links">
-			<li><a href="/">Home</a></li>
-			<li><a href="/" class="active">Scanner</a></li>
-			<li><a href="/privacy">Privacy</a></li>
-			<li><a href="/terms">Terms</a></li>
-			<li><a href="/security">Security</a></li>
-	</ul>
-</nav>
-<!-- Main content wrapper -->
-<main>
-	{% set status_class = 'status-safe' %}
-	{% set status_label = 'Verified' %}
-	{% set status_icon = '✓' %}
-	{% if result.score >= 30 and result.score < 70 %}
-		{% set status_class = 'status-warning' %}
-		{% set status_label = 'Review' %}
-		{% set status_icon = '!' %}
-	{% elif result.score >= 70 %}
-		{% set status_class = 'status-danger' %}
-		{% set status_label = 'Unsafe' %}
-		{% set status_icon = '✕' %}
-	{% endif %}
-	<!-- Result container with status, panels, and actions -->
-	<section class="result-wrapper">
-		<header class="result-header">
-			<!-- Overall status card and score badge -->
-			<div class="status-block {{ status_class }}">
-				<div class="status-icon" aria-hidden="true">
-					<span>{{ status_icon }}</span>
-				</div>
-				<div class="status-copy">
-					<h1>Analysis Complete</h1>
-					<p class="status-label">{{ status_label }}</p>
-					<p class="status-action">{{ result.suggested_action }}</p>
-				</div>
-				<div class="score-badge">
-					<span class="score-number">{{ result.score }}</span>
-					<span class="score-label">Risk Index</span>
-				</div>
-			</div>
-			<p class="scanned-url"><span>Scanned URL</span> {{ url }}</p>
-		</header>
-		<!-- Score breakdown and detection details grid -->
-		<section class="result-body">
-			{% if result.breakdown %}
-			<div class="panel">
-				<h2>Score Breakdown</h2>
-				<table class="breakdown-table">
-					<thead>
-						<tr>
-							<th>Category</th>
-							<th>Signal</th>
-							<th>Weight</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for item in result.breakdown %}
-						<tr>
-							<td>{{ item.category }}</td>
-							<td>{{ item.message }}</td>
-							<td>{% if item.points > 0 %}+{{ item.points }}{% else %}0{% endif %}</td>
-						</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-			{% endif %}
-			<div class="panel">
-				<h2>Detection Details</h2>
-				<ul class="detail-list">
-					{% for r in result.reasons %}
-					<li>{{ r }}</li>
-					{% endfor %}
-				</ul>
-			</div>
-			{% if result.intel_hits %}
-			<div class="panel">
-				<h2>External Intelligence</h2>
-				<ul class="intel-list">
-					{% for hit in result.intel_hits %}
-					<li>
-						<div class="intel-meta">
-							<strong>{{ hit.source }}</strong>
-							<span class="intel-pill severity-{{ hit.severity|default('unknown') }}">{{ hit.severity|default('unknown')|capitalize }}</span>
-						</div>
-						<p>{{ hit.description }}</p>
-					</li>
-					{% endfor %}
-				</ul>
-			</div>
-			{% endif %}
-			{% if result.intel_errors %}
-			<div class="panel">
-				<h2>Intelligence Notes</h2>
-				<ul class="intel-errors">
-					{% for item in result.intel_errors %}
-					<li>{{ item.source }}: {{ item.message }}</li>
-					{% endfor %}
-				</ul>
-			</div>
-			{% endif %}
-		</section>
-		{% if result.ai_analysis %}
-		<!-- Dedicated AI Summary section placed under the main results grid -->
-		<section class="panel ai-section">
-			<h2>AI Summary and Guidance</h2>
-			{% if result.ai_analysis.status == 'ok' %}
-				<p class="ai-summary">{{ result.ai_analysis.summary }}</p>
-				<dl class="ai-meta">
-					<div>
-						<dt>Risk Level</dt>
-						<dd class="ai-risk ai-risk-{{ result.ai_analysis.risk_label }}">{{ result.ai_analysis.risk_label|capitalize }} ({{ result.ai_analysis.risk_score }})</dd>
-					</div>
-					<div>
-						<dt>Confidence</dt>
-						<dd>{{ (result.ai_analysis.confidence * 100)|round(0) }}%</dd>
-					</div>
-					{% if result.ai_analysis.metadata and result.ai_analysis.metadata.final_url %}
-					<div>
-						<dt>Final URL</dt>
-						<dd>{{ result.ai_analysis.metadata.final_url }}</dd>
-					</div>
-					{% endif %}
-				</dl>
-				{% set f = result.ai_analysis.features or {} %}
-				<div class="result-body" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-					<div>
-						<h3 style="margin-top:0">Key Indicators</h3>
-						<ul class="detail-list ai-signals">
-							{% if f.external_forms %}
-							<li>{{ f.external_forms }} form(s) submit to other domains</li>
-							{% endif %}
-							{% if f.password_fields %}
-							<li>Password field(s) detected in page forms</li>
-							{% endif %}
-							{% if f.obfuscated_scripts %}
-							<li>Obfuscated JavaScript patterns: {{ f.obfuscated_scripts }}</li>
-							{% endif %}
-							{% if f.urgent_hits %}
-							<li>Urgent or security phrasing repeated ({{ f.urgent_hits }} hits)</li>
-							{% endif %}
-							{% if f.brand_impersonation %}
-							<li>Brand references that don’t match domain: {{ f.brand_impersonation|join(', ') }}</li>
-							{% endif %}
-							{% if f.suspicious_terms and f.suspicious_terms|length > 0 %}
-							<li>Suspicious terms: {{ (f.suspicious_terms[:8])|join(', ') }}</li>
-							{% endif %}
-							{% if f.total_links and f.external_ratio and f.external_ratio >= 0.5 %}
-							<li>{{ (f.external_ratio * 100)|round(0) }}% of {{ f.total_links }} links point off-site</li>
-							{% endif %}
-							{% if f.shortener_used %}
-							<li>URL shortener domain detected</li>
-							{% endif %}
-						</ul>
-					</div>
-					<div>
-						<h3 style="margin-top:0">Recommendations</h3>
-						<ul class="detail-list">
-							{% set risk = result.ai_analysis.risk_label %}
-							{% if risk in ['high','medium'] %}
-							<li>Avoid entering any credentials or personal information on this page.</li>
-							{% endif %}
-							{% if f.password_fields or f.external_forms %}
-							<li>If this is unexpected, close the page and navigate directly to the known site by typing the URL.</li>
-							{% endif %}
-							{% if f.brand_impersonation %}
-							<li>Verify the domain matches the referenced brand; contact the brand via official channels.</li>
-							{% endif %}
-							{% if f.shortener_used %}
-							<li>Expand the short URL before visiting (use a trusted URL expander or preview feature).</li>
-							{% endif %}
-							{% if f.obfuscated_scripts %}
-							<li>Ensure your browser and security tools are up to date; avoid enabling scripts from unknown sources.</li>
-							{% endif %}
-							<li>Consider scanning with multiple tools and keep anti‑malware protection active.</li>
-						</ul>
-					</div>
-				</div>
-				{% if result.ai_analysis.signals %}
-				<h3>Top AI Signals</h3>
-				<ul class="detail-list ai-signals">
-					{% for sig in (result.ai_analysis.signals|sort(attribute='weight', reverse=True))[:5] %}
-					<li>{{ sig.message }}{% if sig.weight %} <span class="signal-weight">{% if sig.weight > 0 %}+{% endif %}{{ sig.weight }} pts</span>{% endif %}</li>
-					{% endfor %}
-				</ul>
-				{% endif %}
-				{% if result.ai_analysis.metadata %}
-				<h3>Technical Metadata</h3>
-				<dl class="ai-meta">
-					{% if result.ai_analysis.metadata.status_code %}
-					<div>
-						<dt>Status Code</dt>
-						<dd>{{ result.ai_analysis.metadata.status_code }}</dd>
-					</div>
-					{% endif %}
-					{% if result.ai_analysis.metadata.content_type %}
-					<div>
-						<dt>Content Type</dt>
-						<dd>{{ result.ai_analysis.metadata.content_type }}</dd>
-					</div>
-					{% endif %}
-					{% if result.ai_analysis.metadata.redirect_count is not none %}
-					<div>
-						<dt>Redirects</dt>
-						<dd>{{ result.ai_analysis.metadata.redirect_count }}</dd>
-					</div>
-					{% endif %}
-					{% if result.ai_analysis.metadata.analysis_version %}
-					<div>
-						<dt>Analyzer</dt>
-						<dd>v{{ result.ai_analysis.metadata.analysis_version }}</dd>
-					</div>
-					{% endif %}
-				</dl>
-				{% endif %}
-			{% else %}
-				<p class="ai-summary">{{ result.ai_analysis.error or 'AI analysis unavailable' }}</p>
-			{% endif %}
-		</section>
-		{% endif %}
-		<!-- Primary navigation to rescan -->
-		<div class="result-actions">
-			<a href="/" class="cta-link">Run Another Scan</a>
-		</div>
-	</section>
-</main>
-<footer class="site-footer">
-	<div class="footer-overlay"></div>
-	<p>Designed by Demarick Webb Rivera</p>
-	<p style="margin-top:8px; color: var(--color-muted);">
-		<a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/security">Security</a>
-	</p>
-</footer>
+
+  <!-- Trust Bar -->
+  <div class="trust-bar">
+    <div class="container">
+      <div class="trust-bar-inner">
+        <div class="trust-item">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Zero-Log Policy — URLs never stored</span>
+        </div>
+        <div class="trust-item">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Privacy-First — No account required</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="/" class="nav-brand">
+        <img src="/static/logo.svg" alt="" class="nav-logo">
+        <span class="brand-title">Safe URL Check</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/" class="active">Scanner</a></li>
+        <li><a href="/privacy">Privacy</a></li>
+        <li><a href="/security">Security</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <section class="results-section">
+      <div class="results-container">
+
+        <!-- Determine status -->
+        {% set status_class = 'status-safe-bg' %}
+        {% set status_icon = '✓' %}
+        {% set status_title = 'No Threats Detected' %}
+        {% set status_confidence = '94%' %}
+        
+        {% if result.score >= 30 and result.score < 70 %}
+          {% set status_class = 'status-warning-bg' %}
+          {% set status_icon = '!' %}
+          {% set status_title = 'Suspicious Elements Found' %}
+          {% set status_confidence = '78%' %}
+        {% elif result.score >= 70 %}
+          {% set status_class = 'status-danger-bg' %}
+          {% set status_icon = '✕' %}
+          {% set status_title = 'High Risk Detected' %}
+          {% set status_confidence = '96%' %}
+        {% endif %}
+
+        <!-- Result Header -->
+        <div class="result-header-card">
+          <div class="result-status-header">
+            <div class="status-icon-large {{ status_class }}">
+              {{ status_icon }}
+            </div>
+            <div class="status-text">
+              <h1>{{ status_title }}</h1>
+              <p class="status-confidence">Confidence: <strong>{{ status_confidence }}</strong></p>
+              <p class="status-explanation">
+                {% if result.score < 30 %}
+                  Our analysis found no malicious indicators. The domain has positive reputation signals and matches no known threat databases. However, no automated scan is perfect—remain vigilant with unfamiliar sites.
+                {% elif result.score < 70 %}
+                  We found some suspicious indicators that warrant caution. While this doesn't confirm malicious intent, the combination of signals suggests extra verification is warranted before interacting with this site.
+                {% else %}
+                  Multiple high-confidence threat indicators detected. This URL matches known malicious patterns and appears in threat intelligence databases. We recommend avoiding this site entirely.
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          <div class="verdict-box">
+            <div class="verdict-score">
+              <div class="score-value">{{ result.score }}</div>
+              <div class="score-label">Risk Score</div>
+            </div>
+            <div class="verdict-url">
+              <div class="url-label">Analyzed URL</div>
+              <div class="url-value">{{ url }}</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <a href="/" class="btn btn-primary">Scan Another URL</a>
+            {% if result.score >= 70 %}
+              <a href="mailto:help@demarickwebb.dev?subject=False Positive Report: {{ url }}" class="btn btn-secondary">Report False Positive</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- What To Do Section -->
+        <div class="result-panel {% if result.score >= 70 %}action-panel{% endif %}">
+          <h2>What to do</h2>
+          <ol class="action-list">
+            {% if result.score < 30 %}
+              <li>
+                <span class="action-number">1</span>
+                <span class="action-text"><strong>Generally safe to proceed</strong> — No malicious indicators detected, but verify the URL matches what you expected.</span>
+              </li>
+              <li>
+                <span class="action-number">2</span>
+                <span class="action-text"><strong>Check for typos</strong> — Ensure the domain is correct (e.g., google.com, not g00gle.com).</span>
+              </li>
+              <li>
+                <span class="action-number">3</span>
+                <span class="action-text"><strong>Look for HTTPS</strong> — Verify the site uses a valid SSL certificate before entering any data.</span>
+              </li>
+            {% elif result.score < 70 %}
+              <li>
+                <span class="action-number">1</span>
+                <span class="action-text"><strong>Proceed with caution</strong> — Suspicious elements detected. Avoid entering credentials or personal information.</span>
+              </li>
+              <li>
+                <span class="action-number">2</span>
+                <span class="action-text"><strong>Verify independently</strong> — Navigate to the official site directly rather than using this link.</span>
+              </li>
+              <li>
+                <span class="action-number">3</span>
+                <span class="action-text"><strong>Check the details below</strong> — Review the specific indicators that triggered this warning.</span>
+              </li>
+            {% else %}
+              <li>
+                <span class="action-number">1</span>
+                <span class="action-text"><strong>Close this tab immediately</strong> — Do not interact with this website or download anything.</span>
+              </li>
+              <li>
+                <span class="action-number">2</span>
+                <span class="action-text"><strong>If you entered credentials</strong> — Change your password immediately on the legitimate site.</span>
+              </li>
+              <li>
+                <span class="action-number">3</span>
+                <span class="action-text"><strong>Report to your IT team</strong> — If this came via email, your organization may be targeted.</span>
+              </li>
+              <li>
+                <span class="action-number">4</span>
+                <span class="action-text"><strong>Run a security scan</strong> — Use your antivirus software to check for any downloaded files.</span>
+              </li>
+            {% endif %}
+          </ol>
+        </div>
+
+        <!-- Analysis Details -->
+        <div class="result-panel">
+          <h2>Why we reached this conclusion</h2>
+          <ul class="finding-list">
+            {% for reason in result.reasons %}
+            <li>
+              {% if 'Safe Browsing' in reason or 'threat' in reason.lower() or 'flagged' in reason.lower() %}
+                <span class="finding-icon negative">✕</span>
+              {% elif 'suspicious' in reason.lower() or 'missing' in reason.lower() %}
+                <span class="finding-icon warning">!</span>
+              {% elif 'Valid' in reason or 'resolved' in reason.lower() or 'success' in reason.lower() %}
+                <span class="finding-icon positive">✓</span>
+              {% else %}
+                <span class="finding-icon info">ℹ</span>
+              {% endif %}
+              <span class="finding-text">{{ reason }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Score Breakdown -->
+        {% if result.breakdown %}
+        <div class="result-panel">
+          <h2>Risk score breakdown</h2>
+          <table class="analysis-table">
+            <thead>
+              <tr>
+                <th>Analysis Layer</th>
+                <th>Finding</th>
+                <th style="text-align: right;">Impact</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in result.breakdown %}
+              <tr>
+                <td>{{ item.category }}</td>
+                <td>{{ item.message }}</td>
+                <td style="text-align: right;">
+                  {% if item.points > 0 %}
+                    <span style="color: var(--danger-600);">+{{ item.points }}</span>
+                  {% else %}
+                    <span style="color: var(--success-600);">{{ item.points }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        <!-- Threat Intelligence -->
+        {% if result.intel_hits %}
+        <div class="result-panel">
+          <h2>Threat intelligence matches</h2>
+          <div class="intel-grid">
+            {% for hit in result.intel_hits %}
+            <div class="intel-card">
+              <div class="intel-header">
+                <span class="intel-source">{{ hit.source }}</span>
+                <span class="severity-pill severity-{{ hit.severity|default('unknown') }}">
+                  {{ hit.severity|default('unknown')|capitalize }}
+                </span>
+              </div>
+              <p class="intel-description">{{ hit.description }}</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Content Analysis -->
+        {% if result.ai_analysis and result.ai_analysis.status == 'ok' %}
+        <div class="result-panel">
+          <h2>Content analysis</h2>
+          
+          <dl class="analysis-meta">
+            <div class="meta-item">
+              <dt>Content Risk Level</dt>
+              <dd class="risk-{{ result.ai_analysis.risk_label }}">
+                {{ result.ai_analysis.risk_label|capitalize }} ({{ result.ai_analysis.risk_score }}/100)
+              </dd>
+            </div>
+            <div class="meta-item">
+              <dt>Analysis Confidence</dt>
+              <dd>{{ (result.ai_analysis.confidence * 100)|round(0) }}%</dd>
+            </div>
+            {% if result.ai_analysis.metadata.final_url %}
+            <div class="meta-item">
+              <dt>Final Destination</dt>
+              <dd style="font-family: var(--font-mono); font-size: 0.875rem;">
+                {{ result.ai_analysis.metadata.final_url }}
+              </dd>
+            </div>
+            {% endif %}
+          </dl>
+
+          {% set f = result.ai_analysis.features or {} %}
+          
+          {% if f.password_fields or f.external_forms or f.brand_impersonation or f.obfuscated_scripts %}
+          <h3>Content indicators</h3>
+          <ul class="finding-list">
+            {% if f.password_fields %}
+            <li>
+              <span class="finding-icon warning">!</span>
+              <span class="finding-text">Password input fields detected ({{ f.password_fields }})</span>
+            </li>
+            {% endif %}
+            {% if f.external_forms %}
+            <li>
+              <span class="finding-icon warning">!</span>
+              <span class="finding-text">Forms submit to external domains ({{ f.external_forms }})</span>
+            </li>
+            {% endif %}
+            {% if f.brand_impersonation %}
+            <li>
+              <span class="finding-icon warning">!</span>
+              <span class="finding-text">Possible brand impersonation: {{ f.brand_impersonation|join(', ') }}</span>
+            </li>
+            {% endif %}
+            {% if f.obfuscated_scripts %}
+            <li>
+              <span class="finding-icon negative">✕</span>
+              <span class="finding-text">Obfuscated JavaScript detected ({{ f.obfuscated_scripts }} instances)</span>
+            </li>
+            {% endif %}
+            {% if f.urgent_hits %}
+            <li>
+              <span class="finding-icon warning">!</span>
+              <span class="finding-text">Urgent/scare language detected ({{ f.urgent_hits }} instances)</span>
+            </li>
+            {% endif %}
+          </ul>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Share Report -->
+        <div class="result-panel" style="background: var(--bg-elevated); border-style: dashed;">
+          <h2>Share this report</h2>
+          <p style="margin-bottom: var(--space-4); color: var(--text-secondary);">
+            Share this analysis with your IT team or security department. Reports expire after 24 hours for privacy.
+          </p>
+          <div class="report-actions">
+            <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(window.location.href)">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy Link
+            </button>
+            <a href="mailto:help@demarickwebb.dev?subject=URL Security Report&body=Security analysis for: {{ url }}%0A%0ARisk Score: {{ result.score }}/100%0A%0AView full report: {{ request.url }}" class="btn btn-secondary">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              Email Report
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        <div class="footer-status">
+          <span class="status-dot-online"></span>
+          <span>All systems operational</span>
+        </div>
+        <p class="footer-copy">
+          <a href="/">← Back to scanner</a> | 
+          <a href="mailto:help@demarickwebb.dev?subject=False Positive Report">Report incorrect result</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>

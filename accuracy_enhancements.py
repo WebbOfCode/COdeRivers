@@ -1,41 +1,43 @@
 """
-accuracy_enhancements.py — Supplemental checks to improve detection accuracy
+accuracy_enhancements.py — Extra Checks for Better Detection
 
-Checks included:
-- SSL/TLS certificate validation (expiry, issuer)
-- HTTP security headers and redirect behavior
-- Page content inspection (forms, scripts, brand hints)
-- Basic domain reputation cues (parking)
+The main scanner does a lot, but these extra checks help catch
+things that slip through the cracks:
 
-All functions return structured dicts with score impacts and details so
-the main scanner can incorporate them consistently.
+- SSL/TLS certificate validation (is the cert valid? expired?)
+- HTTP security headers (does the site follow best practices?)
+- Page content analysis (forms, scripts, iframes)
+- Domain reputation (is this a parked domain?)
+
+These are the "trust but verify" checks. They give us more
+confidence in our verdict.
 """
 
-# Import regular expression module for pattern matching
 import re
-# Import requests for HTTP header checking
 import requests
-# Import BeautifulSoup for HTML analysis
 from bs4 import BeautifulSoup
-# Import datetime for checking SSL certificate expiration
 from datetime import datetime
-# Import SSL module for certificate validation
 import ssl
-# Import socket for low-level connection testing
 import socket
-# Import URL parsing utility
 from urllib.parse import urlparse
-# Import typing utilities
 from typing import Dict, Any, List, Optional
 
 
-# Function to check SSL certificate validity
 def check_ssl_certificate(hostname: str) -> Dict[str, Any]:
-    """Verify SSL certificate validity, expiration, and issuer.
-    
-    Returns dictionary with certificate status, expiration date, and issuer info.
     """
-    # Initialize result dictionary
+    Validate SSL certificate for HTTPS sites.
+    
+    We check:
+    - Is the certificate valid?
+    - Has it expired?
+    - Who issued it?
+    - How soon does it expire?
+    
+    Expired or invalid certs are red flags. Legit sites keep
+their certs current.
+    
+    Returns dict with validity status and score impact.
+    """
     result = {
         'valid': False,
         'score_impact': 0,
@@ -43,69 +45,75 @@ def check_ssl_certificate(hostname: str) -> Dict[str, Any]:
         'details': {}
     }
     
-    # Try to establish SSL connection
     try:
         # Create SSL context with default settings
         context = ssl.create_default_context()
-        # Connect to hostname on HTTPS port
+        
+        # Connect to the server on HTTPS port
         with socket.create_connection((hostname, 443), timeout=5) as sock:
-            # Wrap socket with SSL
             with context.wrap_socket(sock, server_hostname=hostname) as ssock:
-                # Get certificate information
+                # Get certificate info
                 cert = ssock.getpeercert()
                 
                 # Parse expiration date
                 not_after = cert.get('notAfter', '')
                 if not_after:
-                    # Convert to datetime object
                     expire_date = datetime.strptime(not_after, '%b %d %H:%M:%S %Y %Z')
-                    # Calculate days until expiration
                     days_until_expiry = (expire_date - datetime.now()).days
                     
-                    # Store certificate details
                     result['details']['expires'] = expire_date.isoformat()
                     result['details']['days_remaining'] = days_until_expiry
                     result['details']['issuer'] = dict(x[0] for x in cert.get('issuer', []))
                     
-                    # Evaluate certificate validity
+                    # Evaluate certificate
                     if days_until_expiry < 0:
+                        # Certificate is expired - big red flag
                         result['score_impact'] = 40
                         result['message'] = 'SSL certificate has expired'
                     elif days_until_expiry < 30:
+                        # Expiring soon - maintenance issue, slightly suspicious
                         result['score_impact'] = 15
                         result['message'] = f'SSL certificate expires soon ({days_until_expiry} days)'
                     else:
+                        # All good! Valid cert with time remaining
                         result['valid'] = True
-                        result['score_impact'] = -5  # Reduce risk score for valid cert
+                        result['score_impact'] = -5  # Reduce risk score for good cert
                         result['message'] = 'Valid SSL certificate'
                 else:
+                    # No expiration date? That's weird.
                     result['score_impact'] = 20
                     result['message'] = 'SSL certificate missing expiration date'
                     
-    # Handle SSL errors
     except ssl.SSLError as exc:
+        # SSL error (invalid cert, wrong hostname, etc)
         result['score_impact'] = 35
         result['message'] = f'SSL certificate error: {str(exc)[:100]}'
-    # Handle connection errors
     except (socket.timeout, socket.error, ConnectionRefusedError):
-        result['score_impact'] = 0  # No penalty for unavailable HTTPS
+        # Can't connect via HTTPS - might not support it
+        result['score_impact'] = 0
         result['message'] = 'HTTPS not available or connection timeout'
-    # Handle other exceptions
     except Exception as exc:
+        # Something else went wrong
         result['score_impact'] = 0
         result['message'] = f'SSL check failed: {str(exc)[:100]}'
     
-    # Return certificate analysis
     return result
 
 
-# Function to check HTTP headers for security indicators
 def check_http_headers(url: str) -> Dict[str, Any]:
-    """Analyze HTTP response headers for security best practices.
-    
-    Returns dictionary with header analysis and security score impact.
     """
-    # Initialize result dictionary
+    Analyze HTTP security headers.
+    
+    Security headers tell browsers how to handle a site:
+    - HSTS: Force HTTPS
+    - X-Frame-Options: Prevent clickjacking
+    - CSP: Control what resources can load
+    
+    Missing headers don't mean a site is malicious, but having
+them shows the site owner cares about security.
+    
+    Returns dict with header analysis and score impact.
+    """
     result = {
         'score_impact': 0,
         'missing_headers': [],
@@ -113,14 +121,12 @@ def check_http_headers(url: str) -> Dict[str, Any]:
         'messages': []
     }
     
-    # Try to fetch HTTP headers
     try:
-        # Send HEAD request to get headers without downloading content
+        # Send HEAD request (just get headers, not the whole page)
         response = requests.head(url, timeout=5, allow_redirects=True)
-        # Get all headers
         headers = response.headers
         
-        # Check for security headers
+        # Security headers that should be present
         security_headers = {
             'Strict-Transport-Security': 'HSTS not configured',
             'X-Content-Type-Options': 'Content-Type sniffing protection missing',
@@ -128,31 +134,31 @@ def check_http_headers(url: str) -> Dict[str, Any]:
             'Content-Security-Policy': 'CSP not configured'
         }
         
-        # Evaluate presence of security headers
+        # Check for missing headers
         for header, message in security_headers.items():
             if header not in headers:
                 result['missing_headers'].append(message)
-                result['score_impact'] += 2  # Small penalty per missing header
+                result['score_impact'] += 2  # Small penalty per header
         
-        # Check for suspicious server headers
+        # Check for outdated server software
         server = headers.get('Server', '').lower()
         if any(suspicious in server for suspicious in ['apache/1', 'nginx/0', 'iis/5']):
             result['suspicious_headers'].append('Outdated server software detected')
             result['score_impact'] += 10
         
-        # Check for excessive redirects (potential redirect chain attack)
+        # Check for excessive redirects (might be redirect chain attack)
         if len(response.history) > 3:
             result['suspicious_headers'].append(f'Excessive redirects ({len(response.history)} hops)')
             result['score_impact'] += 12
         
-        # Check if final URL differs significantly from original (redirect to different domain)
+        # Check if we ended up on a different domain than we started
         original_domain = urlparse(url).netloc
         final_domain = urlparse(response.url).netloc
         if original_domain != final_domain:
             result['suspicious_headers'].append(f'Redirects to different domain: {final_domain}')
             result['score_impact'] += 18
         
-        # Compile messages
+        # Build human-readable messages
         if result['missing_headers']:
             result['messages'].append(f"Missing security headers: {', '.join(result['missing_headers'][:2])}")
         if result['suspicious_headers']:
@@ -161,124 +167,126 @@ def check_http_headers(url: str) -> Dict[str, Any]:
             result['messages'].append('HTTP headers show good security practices')
             result['score_impact'] = -3  # Small reward for good headers
             
-    # Handle request errors
     except requests.RequestException as exc:
-        result['score_impact'] = 0  # No penalty if site is unreachable
+        # Site unreachable - no penalty
+        result['score_impact'] = 0
         result['messages'].append(f'HTTP header check unavailable: {str(exc)[:100]}')
     
-    # Return header analysis
     return result
 
 
-# Function to analyze page content for phishing indicators
 def analyze_page_content(url: str) -> Dict[str, Any]:
-    """Download and analyze page HTML for phishing patterns.
-    
-    Returns dictionary with content analysis and risk indicators.
     """
-    # Initialize result dictionary
+    Analyze page HTML for phishing patterns.
+    
+    We download the actual page content and look for:
+    - Password fields sending data elsewhere
+    - Multiple password fields (confusion attack)
+    - External iframes (loading content from elsewhere)
+    - Obfuscated JavaScript
+    - Brand impersonation in page titles
+    
+    Returns dict with content analysis and indicators.
+    """
     result = {
         'score_impact': 0,
         'indicators': [],
         'form_analysis': {}
     }
     
-    # Try to fetch and analyze page content
     try:
-        # Send GET request to download HTML
+        # Download the page
         response = requests.get(url, timeout=8, allow_redirects=True)
-        # Parse HTML with BeautifulSoup
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # Check for password input fields (common in phishing)
+        # Check for password fields
         password_fields = soup.find_all('input', {'type': 'password'})
         if password_fields:
-            # Check if forms submit to external domain
             forms = soup.find_all('form')
             for form in forms:
                 action = form.get('action', '')
-                # If action is external URL
+                # Password form submitting to different domain = BIG RED FLAG
                 if action.startswith('http') and urlparse(url).netloc not in action:
                     result['indicators'].append('Password form submits to external domain')
                     result['score_impact'] += 35
                     break
             
-            # Check for multiple password fields (sign-up vs login confusion)
+            # Unusual number of password fields
             if len(password_fields) > 2:
                 result['indicators'].append('Unusual number of password fields detected')
                 result['score_impact'] += 8
         
-        # Check for iframes (can be used to load malicious content)
+        # Check for iframes (especially external ones)
         iframes = soup.find_all('iframe')
         external_iframes = [iframe for iframe in iframes if iframe.get('src', '').startswith('http')]
         if len(external_iframes) > 2:
             result['indicators'].append(f'Multiple external iframes detected ({len(external_iframes)})')
             result['score_impact'] += 12
         
-        # Check for suspicious JavaScript patterns
+        # Check for obfuscated JavaScript
         scripts = soup.find_all('script')
         for script in scripts:
             script_content = script.string or ''
-            # Look for obfuscation patterns
+            # eval() and unescape() are red flags for obfuscation
             if 'eval(' in script_content or 'unescape(' in script_content:
                 result['indicators'].append('Obfuscated JavaScript detected')
                 result['score_impact'] += 20
                 break
         
-        # Check page title for brand impersonation keywords
+        # Check page title for brand impersonation
         title = soup.find('title')
         if title:
             title_text = title.string or ''
             impersonation_brands = ['paypal', 'amazon', 'microsoft', 'apple', 'google', 'bank', 'login']
             if any(brand in title_text.lower() for brand in impersonation_brands):
-                # Only flag if domain doesn't match brand
                 domain = urlparse(url).netloc.lower()
+                # If title mentions "PayPal" but domain isn't paypal.com...
                 if not any(brand in domain for brand in impersonation_brands):
                     result['indicators'].append('Page title suggests brand impersonation')
                     result['score_impact'] += 25
         
-        # Store form analysis
+        # Store form analysis for reporting
         result['form_analysis'] = {
             'total_forms': len(soup.find_all('form')),
             'password_fields': len(password_fields),
             'external_iframes': len(external_iframes)
         }
         
-        # If no indicators found, note clean content
+        # If nothing suspicious found, that's good news
         if not result['indicators']:
             result['indicators'].append('No suspicious content patterns detected')
             result['score_impact'] = -5  # Small reward
             
-    # Handle request errors
     except requests.RequestException as exc:
-        result['score_impact'] = 0  # No penalty if page unavailable
+        # Page unreachable - no penalty
+        result['score_impact'] = 0
         result['indicators'].append(f'Content analysis unavailable: {str(exc)[:100]}')
-    # Handle parsing errors
     except Exception as exc:
+        # Parsing failed - no penalty
         result['score_impact'] = 0
         result['indicators'].append(f'Content parsing failed: {str(exc)[:100]}')
     
-    # Return content analysis
     return result
 
 
-# Function to check domain reputation using multiple signals
 def check_domain_reputation(domain: str) -> Dict[str, Any]:
-    """Cross-reference domain against multiple reputation databases.
-    
-    Returns dictionary with reputation score and sources.
     """
-    # Initialize result dictionary
+    Check domain reputation using various signals.
+    
+    Currently checks for parked domains ("this domain for sale" pages).
+    Might add more checks later (DNSBL, etc).
+    
+    Returns dict with reputation info and score impact.
+    """
     result = {
         'score_impact': 0,
         'reputation_sources': [],
         'risk_level': 'unknown'
     }
     
-    # Check against known parking page patterns
+    # Keywords that suggest a parked domain
     parking_keywords = ['domain for sale', 'buy this domain', 'parked domain']
     
-    # Try to check domain reputation
     try:
         # Fetch homepage
         response = requests.get(f'http://{domain}', timeout=5)
@@ -290,26 +298,27 @@ def check_domain_reputation(domain: str) -> Dict[str, Any]:
             result['score_impact'] += 15
             result['risk_level'] = 'suspicious'
         
-    # Handle errors silently
     except Exception:
+        # Can't reach domain, can't check reputation
         pass
     
-    # If no reputation signals found
     if not result['reputation_sources']:
         result['reputation_sources'].append('No additional reputation data available')
         result['risk_level'] = 'unknown'
     
-    # Return reputation analysis
     return result
 
 
-# Function to perform comprehensive URL verification
 def enhanced_url_verification(url: str) -> Dict[str, Any]:
-    """Run all enhanced accuracy checks and aggregate results.
-    
-    Returns dictionary with all verification results and total score impact.
     """
-    # Parse URL to extract hostname
+    Run all enhanced checks and combine results.
+    
+    This is the main entry point for the enhanced verification.
+    It runs all the individual checks and aggregates their results.
+    
+    Returns comprehensive dict with all check results and total score impact.
+    """
+    # Parse URL to get hostname
     try:
         parsed = urlparse(url if '://' in url else 'http://' + url)
         hostname = parsed.hostname or ''
@@ -320,36 +329,34 @@ def enhanced_url_verification(url: str) -> Dict[str, Any]:
             'error': 'Invalid URL format'
         }
     
-    # Initialize results dictionary
     results = {
         'total_score_impact': 0,
         'checks_performed': []
     }
     
-    # Run SSL certificate check for HTTPS URLs
+    # SSL check (only for HTTPS URLs)
     if parsed.scheme == 'https':
         ssl_result = check_ssl_certificate(hostname)
         results['ssl_certificate'] = ssl_result
         results['total_score_impact'] += ssl_result['score_impact']
         results['checks_performed'].append('SSL Certificate Validation')
     
-    # Run HTTP headers check
+    # HTTP headers check
     headers_result = check_http_headers(url)
     results['http_headers'] = headers_result
     results['total_score_impact'] += headers_result['score_impact']
     results['checks_performed'].append('HTTP Security Headers')
     
-    # Run content analysis
+    # Content analysis
     content_result = analyze_page_content(url)
     results['page_content'] = content_result
     results['total_score_impact'] += content_result['score_impact']
     results['checks_performed'].append('Page Content Analysis')
     
-    # Run domain reputation check
+    # Domain reputation check
     reputation_result = check_domain_reputation(hostname)
     results['domain_reputation'] = reputation_result
     results['total_score_impact'] += reputation_result['score_impact']
     results['checks_performed'].append('Domain Reputation')
     
-    # Return comprehensive results
     return results

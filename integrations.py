@@ -1,157 +1,158 @@
 """
-integrations.py — External integrations for DNS, WHOIS, and Safe Browsing
+integrations.py — Talking to External Services
 
-Functions:
-- get_mx_records / has_mx: DNS MX record checks
-- has_spf: SPF presence via TXT records
-- get_whois_info: Domain registration metadata
-- safe_browsing_check: Google Safe Browsing v4 lookup
+This module handles all the external API calls:
+- DNS lookups (MX and SPF records)
+- WHOIS queries (who registered this domain?)
+- Google Safe Browsing (is Google flagging this?)
+
+These are our "phone calls" to other services. Sometimes they answer,
+sometimes they don't. We handle both gracefully.
 """
 
-# Import DNS resolver library for MX and SPF record lookups
-import dns.resolver
-# Import WHOIS library for domain registration information
-import whois
-# Import typing hints for function signatures
+import dns.resolver      # For DNS lookups (MX, SPF, etc)
+import whois             # For WHOIS queries
 from typing import Tuple, List
-# Import lru_cache decorator to cache expensive lookups
-from functools import lru_cache
-# Import os module to read environment variables
+from functools import lru_cache  # Cache expensive lookups
 import os
-# Import requests library for HTTP API calls
 import requests
 
 
-# Function to retrieve MX (Mail Exchange) records for a domain
 @lru_cache(maxsize=256)
 def get_mx_records(domain: str) -> List[str]:
-    # Try to query DNS for MX records
+    """
+    Get MX (Mail Exchange) records for a domain.
+    
+    MX records tell us where email for this domain should go.
+    Legit businesses usually have MX records. Random sketchy domains often don't.
+    
+    Returns list of mail server hostnames, empty list if none found.
+    """
     try:
-        # Resolve MX records for the given domain
+        # Query DNS for MX records
         answers = dns.resolver.resolve(domain, 'MX', lifetime=5)
-        # Extract and strip trailing dots from MX hostnames, return as list
+        # Strip trailing dots from hostnames (DNS quirk)
         return [str(r.exchange).rstrip('.') for r in answers]
-    # If DNS lookup fails, catch the exception
     except Exception:
-        # Return empty list if no MX records found
+        # No MX records or DNS failed
         return []
 
 
-# Function to check if a domain has MX records (indicates email capability)
 def has_mx(domain: str) -> bool:
-    # Call get_mx_records and return True if any records exist
+    """Quick check: does this domain have MX records?"""
     return bool(get_mx_records(domain))
 
 
-# Function to check if a domain has SPF (Sender Policy Framework) record
 @lru_cache(maxsize=256)
 def has_spf(domain: str) -> bool:
-    # Try to query DNS for TXT records
+    """
+    Check if domain has an SPF (Sender Policy Framework) record.
+    
+    SPF is an email authentication thing. It says "only these servers
+    can send email for my domain." Not having it isn't terrible, but
+    having it shows the domain owner cares about email security.
+    
+    Returns True if SPF record found, False otherwise.
+    """
     try:
-        # Resolve TXT records for the given domain
+        # Query TXT records (SPF is stored as TXT)
         answers = dns.resolver.resolve(domain, 'TXT', lifetime=5)
-        # Loop through each TXT record
         for r in answers:
-            # Decode bytes to string if needed, join all parts of the TXT record
+            # TXT records can have multiple strings, join them
             txt = ''.join([t.decode() if isinstance(t, bytes) else str(t) for t in r.strings])
-            # Check if the TXT record contains SPF version identifier
+            # Look for SPF version marker
             if 'v=spf1' in txt:
-                # Return True if SPF record found
                 return True
-    # If DNS lookup fails, catch the exception
     except Exception:
-        # Silently pass if error occurs
+        # DNS lookup failed, oh well
         pass
-    # Return False if no SPF record found
     return False
 
 
-# Function to retrieve WHOIS information for a domain
 @lru_cache(maxsize=256)
 def get_whois_info(domain: str) -> dict:
-    # Try to perform WHOIS lookup
+    """
+    Get WHOIS registration info for a domain.
+    
+    WHOIS tells us:
+    - When the domain was registered
+    - Who registered it (sometimes)
+    - When it expires
+    
+    New domains are more suspicious than old ones.
+    Private registration isn't bad, just less transparent.
+    
+    Returns dict with domain info, empty dict if lookup fails.
+    """
     try:
-        # Query WHOIS database for domain information
         w = whois.whois(domain)
-        # Return dictionary with key domain registration details
         return {
-            # Domain name from WHOIS record
             'domain_name': w.domain_name,
-            # Registrar company name
             'registrar': w.registrar,
-            # Domain creation/registration date
             'creation_date': w.creation_date,
-            # Domain expiration date
             'expiration_date': w.expiration_date,
         }
-    # If WHOIS lookup fails, catch the exception
     except Exception:
-        # Return empty dictionary if lookup fails
+        # WHOIS lookup failed (common for some TLDs)
         return {}
 
 
-# Function to check a URL against Google Safe Browsing API
 def safe_browsing_check(url: str, api_key: str = None) -> dict:
-    # Docstring explaining function purpose and return value
-    """Check a URL using Google Safe Browsing v4 API.
-
-    Returns a dict with keys: ok (bool), matches (list) or error message.
-    If api_key is None, will attempt to read from SAFE_BROWSING_API_KEY env var.
     """
-    # Validate URL is not empty or None
+    Check a URL against Google Safe Browsing API.
+    
+    Google maintains a massive database of known malicious URLs.
+    If they flag something, we should probably listen.
+    
+    Args:
+        url: The URL to check
+        api_key: Optional API key (falls back to env var)
+    
+    Returns:
+        {'ok': True, 'matches': [...]} if check succeeded
+        {'ok': False, 'error': '...'} if something went wrong
+    """
+    # Basic validation
     if not url or not url.strip():
-        # Return error for empty/invalid URLs
         return {'ok': False, 'error': 'Invalid or empty URL provided'}
     
-    # Get API key from parameter or environment variable
+    # Get API key from param or environment
     key = api_key or os.environ.get('SAFE_BROWSING_API_KEY')
-    # Check if API key is available
     if not key:
-        # Return error dict if no API key provided
         return {'ok': False, 'error': 'No Safe Browsing API key provided'}
 
-    # Build the Safe Browsing API endpoint URL with the API key
+    # Build the API request
     endpoint = f'https://safebrowsing.googleapis.com/v4/threatMatches:find?key={key}'
-    # Construct the JSON payload for the API request
+    
     payload = {
-        # Client identification section
         'client': {
-            # Application identifier
             'clientId': 'safe-url-check',
-            # Application version
             'clientVersion': '1.0'
         },
-        # Threat information section specifying what to check
         'threatInfo': {
-            # List of threat types to check for
-            'threatTypes': ['MALWARE', 'SOCIAL_ENGINEERING', 'POTENTIALLY_HARMFUL_APPLICATION', 'UNWANTED_SOFTWARE'],
-            # Platform types to check (any platform)
+            'threatTypes': [
+                'MALWARE',
+                'SOCIAL_ENGINEERING', 
+                'POTENTIALLY_HARMFUL_APPLICATION',
+                'UNWANTED_SOFTWARE'
+            ],
             'platformTypes': ['ANY_PLATFORM'],
-            # Type of threat entries (URL in this case)
             'threatEntryTypes': ['URL'],
-            # List of URLs to check (single URL)
             'threatEntries': [{'url': url}]
         }
     }
 
-    # Try to make the API request
     try:
-        # POST request to Safe Browsing API with JSON payload and 10 second timeout
+        # Make the API call
         resp = requests.post(endpoint, json=payload, timeout=10)
-        # Raise exception if HTTP error status code returned
         resp.raise_for_status()
-        # Parse JSON response from API
+        
+        # Parse response
         data = resp.json()
-        # Extract matches list from response (empty list if no threats found)
         matches = data.get('matches', [])
-        # Return success dict with matches
         return {'ok': True, 'matches': matches}
-    # Catch HTTP-specific errors (4xx, 5xx status codes)
+        
     except requests.HTTPError as e:
-        # Return error dict with HTTP error details
         return {'ok': False, 'error': f'HTTP error: {e}'}
-    # Catch any other exceptions (network errors, timeout, etc.)
     except Exception as e:
-        # Return error dict with generic error message
         return {'ok': False, 'error': str(e)}
-

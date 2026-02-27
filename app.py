@@ -1,29 +1,46 @@
 """
-Safe-URL-Check — Flask application entry point
+Safe-URL-Check — Main Flask App
 
-Routes:
-- GET /            : Landing page with scanner form and health widget
-- GET /api/health  : JSON health summary for external monitoring
-- POST /check      : Runs analysis pipeline and renders result view
+Real talk: this is the entry point. Everything starts here.
+Routes handle the web stuff, templates do the HTML dance.
 
-This file wires HTTP routes to scanner logic and templates.
+Built by Demarick because he was tired of sketchy links ruining his day.
 """
 
-# Import Flask framework and utilities for web application
+# Import Flask - it's like Express but for people who like Python
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import os
-# Import limiter class to enforce rate limits on endpoints
+from pathlib import Path
+
+# Load env vars from .env file for local dev
+# In production (Vercel), they handle this stuff for us
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent.joinpath('.env')
+    if env_path.exists():
+        # Only load .env if it exists (dev mode vibes)
+        load_dotenv(dotenv_path=env_path)
+except Exception:
+    # python-dotenv not installed? whatever, we ball
+    pass
+
+# Rate limiting - because some people can't have nice things
+# Prevents the API from getting hammered by bots
 from flask_limiter import Limiter
-# Import helper to derive client IP address for rate limiting
 from flask_limiter.util import get_remote_address
-# Import URL analysis function from scanners module
+
+# Our custom scanner - the brain of the operation
 from scanners import analyze_url
-# Import health monitoring functions
+
+# Health check module - keeps tabs on our external services
 from health_check import get_all_health_status, get_overall_health
 
-# Create Flask application instance
+# Initialize Flask app
 app = Flask(__name__)
-# Configure rate limiter to protect /check endpoint from abuse
+
+# Set up rate limiter
+# 60 requests/minute is plenty for normal use
+# If someone's hitting us harder than that, probably sus
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
@@ -31,73 +48,80 @@ limiter = Limiter(
 )
 
 
-# Route handler for homepage (GET request)
 @app.get('/')
 @limiter.exempt
 def home():
-    # Get API health status for display on homepage
+    """Homepage - where the magic begins."""
+    # Grab health status to show users our services are working
     health_status = get_overall_health()
-    # Render and return the index.html template with health data
     return render_template('index.html', health=health_status)
 
 
-# Static informational pages — Privacy, Terms, Security
+# Static pages - the legal stuff nobody reads but everyone needs
 @app.get('/privacy')
 @limiter.exempt
 def privacy_page():
-    """Render Privacy Policy with optional metadata."""
+    """Privacy policy - we actually care about your data."""
     return render_template('privacy.html')
 
 
 @app.get('/terms')
 @limiter.exempt
 def terms_page():
-    """Render Terms of Service."""
+    """Terms of service - the fine print."""
     return render_template('terms.html')
 
 
 @app.get('/security')
 @limiter.exempt
 def security_page():
-    """Render Security page."""
+    """Security page - how we keep things locked down."""
     return render_template('security.html')
 
 
-# Route handler for health check API endpoint (GET request)
+# Health check endpoint - for monitoring/uptime checks
 @app.get('/api/health')
 @limiter.exempt
 def api_health():
-    # Get comprehensive health status
+    """JSON health check - returns status of all our services."""
     health_data = get_overall_health()
-    # Return health data as JSON
     return jsonify(health_data)
 
 
-# Route handler for URL checking (POST request)
+# The main event - URL scanning endpoint
 @app.post('/check')
-@limiter.limit('10 per minute')
+@limiter.limit('10 per minute')  # Be nice to our servers
 def check():
-    # Get URL from form data, default to empty string, strip whitespace
+    """Scan a URL and return results. This is where the work happens."""
+    # Grab URL from form data
     url = request.form.get('url', '').strip()
-    # If URL is empty after stripping
+    
+    # Basic validation - gotta have something to scan
     if not url:
-        # Redirect user back to homepage
+        # User didn't give us a URL, send them back home
         return redirect(url_for('home'))
-    # Analyze the URL using the scanner function
+    
+    # Run the analysis - this does ALL the heavy lifting
     result = analyze_url(url)
-    # Render result page with URL and analysis results
+    
+    # Render results page with our findings
     return render_template('result.html', url=url, result=result)
 
 
-# Development entry point (when executed directly)
+# Development server config
 if __name__ == '__main__':
-    # Configurable host/port/debug with safe defaults; disable reloader to prevent batch window closing
+    # Grab config from environment or use sensible defaults
     host = os.environ.get('HOST', '0.0.0.0')
     try:
         port = int(os.environ.get('PORT', '5000'))
     except ValueError:
-        port = 5000
+        port = 5000  # fallback if someone puts garbage in PORT
+    
+    # Debug mode - only for local dev, NEVER in production
     debug = os.environ.get('FLASK_DEBUG', os.environ.get('DEBUG', '0')) in ('1', 'true', 'True')
-    # Disable the Werkzeug reloader by default to avoid parent process exit on Windows double-click
+    
+    # Disable reloader by default - fixes Windows double-click weirdness
     use_reloader = os.environ.get('FLASK_RELOAD', '0') in ('1', 'true', 'True')
+    
+    # Fire it up!
     app.run(host=host, port=port, debug=debug, use_reloader=use_reloader, threaded=True)

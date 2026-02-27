@@ -1,102 +1,45 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clean, modern shield logo -->
   <defs>
-    <!-- Gradients for depth -->
-    <linearGradient id="shieldGradient" x1="400" y1="125" x2="400" y2="625" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#DC2626" />
-      <stop offset="50%" stop-color="#B91C1C" />
-      <stop offset="100%" stop-color="#7F1D1D" />
+    <linearGradient id="shieldGradient" x1="400" y1="100" x2="400" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
     </linearGradient>
-    <linearGradient id="innerShieldGradient" x1="400" y1="187.5" x2="400" y2="575" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#1A1A1A" />
-      <stop offset="100%" stop-color="#0A0A0A" />
+    <linearGradient id="checkGradient" x1="300" y1="450" x2="500" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22C55E"/>
+      <stop offset="100%" stop-color="#16A34A"/>
     </linearGradient>
-    <linearGradient id="goldGradient" x1="0" y1="0" x2="1" y2="1" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FFD700" />
-      <stop offset="50%" stop-color="#FFA500" />
-      <stop offset="100%" stop-color="#FFD700" />
-    </linearGradient>
-    <radialGradient id="glowGradient" cx="400" cy="400" r="300" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.3" />
-      <stop offset="70%" stop-color="#DC2626" stop-opacity="0.1" />
-      <stop offset="100%" stop-color="transparent" stop-opacity="0" />
-    </radialGradient>
-    <!-- Filters for glow effects -->
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="7.5" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
-  <!-- Ambient glow circle -->
-  <circle cx="400" cy="400" r="300" fill="url(#glowGradient)" opacity="0.6" />
-  <!-- Outer shield -->
-  <path d="M400 125 L587.5 212.5 Q600 217.5 600 232.5 L600 412.5 Q600 462.5 587.5 500 Q562.5 550 400 625 Q237.5 550 212.5 500 Q200 462.5 200 412.5 L200 232.5 Q200 217.5 212.5 212.5 Z" fill="url(#shieldGradient)" opacity="0.95" />
-  <!-- Shield highlight -->
-  <path d="M400 125 L587.5 212.5 Q600 217.5 600 232.5 L600 250 Q400 200 200 250 L200 232.5 Q200 217.5 212.5 212.5 Z" fill="#FF6B6B" opacity="0.4" />
-  <!-- Shield shadow -->
-  <path d="M400 612.5 Q375 620 350 617.5 Q250 575 217.5 512.5 Q212.5 487.5 212.5 462.5 L212.5 487.5 Q212.5 512.5 225 537.5 Q250 575 400 625 Q550 575 575 537.5 Q587.5 512.5 587.5 487.5 L587.5 462.5 Q587.5 487.5 582.5 512.5 Q550 575 450 617.5 Q425 620 400 612.5 Z" fill="#000000" opacity="0.5" />
-  <!-- Inner shield -->
-  <path d="M400 187.5 L550 255 Q557.5 260 557.5 270 L557.5 400 Q557.5 437.5 545 467.5 Q525 505 400 562.5 Q275 505 255 467.5 Q242.5 437.5 242.5 400 L242.5 270 Q242.5 260 250 255 Z" fill="url(#innerShieldGradient)" opacity="0.85" />
-  <!-- Circuit patterns left -->
-  <g opacity="0.7">
-    <circle cx="275" cy="325" r="7.5" fill="#FFD700" filter="url(#softGlow)" />
-    <line x1="275" y1="325" x2="275" y2="362.5" stroke="#FFD700" stroke-width="6.25" />
-    <circle cx="275" cy="362.5" r="6.25" fill="#FFD700" />
-    <line x1="275" y1="362.5" x2="312.5" y2="362.5" stroke="#FFD700" stroke-width="6.25" />
-    <circle cx="312.5" cy="362.5" r="6.25" fill="#FFD700" />
-  </g>
-  <!-- Circuit patterns right -->
-  <g opacity="0.7">
-    <circle cx="525" cy="325" r="7.5" fill="#FFD700" filter="url(#softGlow)" />
-    <line x1="525" y1="325" x2="525" y2="362.5" stroke="#FFD700" stroke-width="6.25" />
-    <circle cx="525" cy="362.5" r="6.25" fill="#FFD700" />
-    <line x1="525" y1="362.5" x2="487.5" y2="362.5" stroke="#FFD700" stroke-width="6.25" />
-    <circle cx="487.5" cy="362.5" r="6.25" fill="#FFD700" />
-  </g>
-  <!-- Micro-patterns -->
-  <g opacity="0.2">
-    <circle cx="325" cy="275" r="2.5" fill="#FFD700" />
-    <circle cx="350" cy="287.5" r="2.5" fill="#FFD700" />
-    <circle cx="375" cy="280" r="2.5" fill="#FFD700" />
-    <circle cx="425" cy="280" r="2.5" fill="#FFD700" />
-    <circle cx="450" cy="287.5" r="2.5" fill="#FFD700" />
-    <circle cx="475" cy="275" r="2.5" fill="#FFD700" />
-  </g>
-  <!-- Gold checkmark -->
-  <g filter="url(#glow)">
-    <path d="M337.5 400 L375 437.5 L462.5 325" stroke="#000000" stroke-width="35" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.4" transform="translate(5, 5)" />
-    <path d="M337.5 400 L375 437.5 L462.5 325" stroke="url(#goldGradient)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-    <path d="M337.5 400 L375 437.5 L462.5 325" stroke="#FFEB3B" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5" />
-  </g>
-  <!-- Corner nodes -->
-  <g filter="url(#softGlow)">
-    <circle cx="162.5" cy="162.5" r="7.5" fill="#FFD700" opacity="0.6" />
-    <circle cx="637.5" cy="162.5" r="7.5" fill="#DC2626" opacity="0.6" />
-    <circle cx="162.5" cy="637.5" r="7.5" fill="#DC2626" opacity="0.6" />
-    <circle cx="637.5" cy="637.5" r="7.5" fill="#FFD700" opacity="0.6" />
-  </g>
-  <!-- Corner brackets -->
-  <g stroke="#FFD700" stroke-width="3.75" opacity="0.3" stroke-linecap="round">
-    <path d="M 125 175 L 125 125 L 175 125" />
-    <path d="M 625 125 L 675 125 L 675 175" />
-    <path d="M 675 625 L 675 675 L 625 675" />
-    <path d="M 175 675 L 125 675 L 125 625" />
-  </g>
-  <!-- Connecting lines -->
-  <g stroke="#DC2626" stroke-width="1.25" opacity="0.15">
-    <line x1="162.5" y1="162.5" x2="250" y2="250" />
-    <line x1="637.5" y1="162.5" x2="550" y2="250" />
-    <line x1="162.5" y1="637.5" x2="250" y2="550" />
-    <line x1="637.5" y1="637.5" x2="550" y2="550" />
-  </g>
+  
+  <!-- Shield shape -->
+  <path 
+    d="M400 100 C400 100 150 200 150 400 C150 550 250 650 400 700 C550 650 650 550 650 400 C650 200 400 100 400 100 Z" 
+    fill="url(#shieldGradient)"
+  />
+  
+  <!-- Inner highlight -->
+  <path 
+    d="M400 130 C400 130 180 220 180 400 C180 530 270 620 400 665 C530 620 620 530 620 400 C620 220 400 130 400 130 Z" 
+    fill="rgba(255,255,255,0.1)"
+  />
+  
+  <!-- Checkmark -->
+  <path 
+    d="M280 400 L360 480 L520 320" 
+    stroke="url(#checkGradient)" 
+    stroke-width="50" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    fill="none"
+  />
+  
+  <!-- Checkmark white highlight -->
+  <path 
+    d="M280 400 L360 480 L520 320" 
+    stroke="rgba(255,255,255,0.3)" 
+    stroke-width="15" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    fill="none"
+  />
 </svg>
